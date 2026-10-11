@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Ripon Limo",
+    "slug": "ripon-limo-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0D14"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.riponlimo.client"
+    },
+    "android": {
+      "package": "com.riponlimo.client",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0D14",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
