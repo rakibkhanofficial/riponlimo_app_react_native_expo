@@ -48,6 +48,18 @@ cd /path/to/riponlimo
 npm run dev # Runs on http://localhost:3010
 ```
 
+### Environment Configuration (.env)
+Each mobile app supports the `EXPO_PUBLIC_API_URL` environment variable:
+- **`client_app/.env`**: `EXPO_PUBLIC_API_URL=http://localhost:3010`
+- **`driver_app/.env`**: `EXPO_PUBLIC_API_URL=http://localhost:3010`
+- **`admin_app/.env`**: `EXPO_PUBLIC_API_URL=http://localhost:3010`
+
+Target URL options:
+- **iOS Simulator**: `http://localhost:3010`
+- **Android Emulator**: `http://10.0.2.2:3010`
+- **Physical Device (LAN)**: `http://192.168.1.XX:3010` (your computer's local Wi-Fi IP)
+- **Production API**: `https://api.riponlimo.com`
+
 ### Run Client App
 ```bash
 cd client_app

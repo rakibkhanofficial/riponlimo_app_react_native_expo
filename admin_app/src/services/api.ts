@@ -6,9 +6,11 @@ const STORAGE_API_KEY = 'ripon_limo_admin_api_url';
 const STORAGE_ADMIN_KEY = 'ripon_limo_admin_user';
 
 const DEFAULT_PORT = '3010';
-const DEFAULT_URL = Platform.OS === 'android'
-  ? `http://10.0.2.2:${DEFAULT_PORT}`
-  : `http://localhost:${DEFAULT_PORT}`;
+const DEFAULT_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  (Platform.OS === 'android'
+    ? `http://10.0.2.2:${DEFAULT_PORT}`
+    : `http://localhost:${DEFAULT_PORT}`);
 
 export const getBaseUrl = async (): Promise<string> => {
   try {
