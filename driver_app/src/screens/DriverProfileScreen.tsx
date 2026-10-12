@@ -20,6 +20,7 @@ import { Card } from '../components/common/Card'
 import { Button } from '../components/common/Button'
 import { Input } from '../components/common/Input'
 import { Badge } from '../components/common/Badge'
+import { VehicleAssignmentModal } from '../components/driver/VehicleAssignmentModal'
 import { driverApi, DEFAULT_BASE_URL } from '../config/api'
 
 interface DriverProfileScreenProps {
@@ -33,6 +34,7 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
 
   const [apiUrl, setApiUrl] = useState(driverApi.getBaseUrl())
   const [showApiConfig, setShowApiConfig] = useState(false)
+  const [showVehicleModal, setShowVehicleModal] = useState(false)
 
   const handleSaveApiUrl = async () => {
     try {
@@ -109,6 +111,18 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
           title="Assigned Vehicle Details"
           subtitle="Daily livery inspection verified"
           icon={<MaterialCommunityIcons name="car-limousine" size={18} color={theme.primary} />}
+          rightAction={
+            <TouchableOpacity
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                setShowVehicleModal(true)
+              }}
+              style={[styles.switchVehiclePill, { borderColor: theme.border }]}
+            >
+              <Feather name="refresh-cw" size={12} color={theme.primary} />
+              <Text style={[styles.switchVehicleText, { color: theme.primary }]}>SWITCH</Text>
+            </TouchableOpacity>
+          }
         >
           <View style={styles.vehicleDetails}>
             <View style={styles.detailItem}>
@@ -260,6 +274,12 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
           />
         </View>
       </ScrollView>
+
+      {/* Vehicle Assignment Modal */}
+      <VehicleAssignmentModal
+        visible={showVehicleModal}
+        onClose={() => setShowVehicleModal(false)}
+      />
     </SafeAreaView>
   )
 }
@@ -267,6 +287,20 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  switchVehiclePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 2,
+    borderWidth: 1,
+  },
+  switchVehicleText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   scrollContent: {
     paddingHorizontal: 16,

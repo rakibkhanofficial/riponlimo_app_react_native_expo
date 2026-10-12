@@ -59,8 +59,20 @@ export interface Booking {
   }
 }
 
+export interface FleetVehicle {
+  id: string
+  name: string
+  brand: string
+  model: string
+  plateNumber: string
+  capacity: number
+  images?: string[]
+  status?: string
+}
+
 export interface DriverShift {
   isOnline: boolean
+  vehicleId?: string
   vehicleName: string
   vehiclePlate: string
   completedTripsToday: number

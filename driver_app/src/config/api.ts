@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
-import { User, Booking } from '../types'
+import { User, Booking, FleetVehicle } from '../types'
 
 const API_STORAGE_KEY = '@ripon_limo_driver_api_url'
 
@@ -158,6 +158,59 @@ export const FALLBACK_AVAILABLE_BOOKINGS: Booking[] = [
   },
 ]
 
+export const FALLBACK_FLEET_VEHICLES = [
+  {
+    id: 'cmtsaqvvw000a13is7v3ul06p',
+    name: 'Cadillac Escalade ESV VIP',
+    brand: 'Cadillac',
+    model: 'Escalade ESV VIP',
+    plateNumber: 'SUV-001',
+    capacity: 6,
+    images: ['/cars/cadillac-escalade.png'],
+    status: 'AVAILABLE',
+  },
+  {
+    id: 'cmtsaqwyy000g13isnh7woeje',
+    name: 'Mercedes-Benz S 580 Presidential',
+    brand: 'Mercedes-Benz',
+    model: 'S 580 Presidential',
+    plateNumber: 'SED-001',
+    capacity: 3,
+    images: ['/cars/mercedes-s-class.png'],
+    status: 'AVAILABLE',
+  },
+  {
+    id: 'cmtsaqwfs000c13islbd0noj5',
+    name: 'GMC Yukon Denali XL',
+    brand: 'GMC',
+    model: 'Yukon Denali XL',
+    plateNumber: 'SUV-002',
+    capacity: 6,
+    images: ['/cars/gmc-yukon.png'],
+    status: 'AVAILABLE',
+  },
+  {
+    id: 'cmtsaqx9s000e13is6pydk8al',
+    name: 'Rolls-Royce Ghost Extended',
+    brand: 'Rolls-Royce',
+    model: 'Ghost Extended',
+    plateNumber: 'VIP-001',
+    capacity: 3,
+    images: ['/cars/rolls-royce-ghost.png'],
+    status: 'AVAILABLE',
+  },
+  {
+    id: 'cmtsaqx12000d13is6pydk8bm',
+    name: 'Lincoln Navigator L Black Label',
+    brand: 'Lincoln',
+    model: 'Navigator L',
+    plateNumber: 'SUV-003',
+    capacity: 6,
+    images: ['/cars/lincoln-navigator.png'],
+    status: 'AVAILABLE',
+  },
+]
+
 class DriverApiClient {
   private baseUrl: string = DEFAULT_BASE_URL
 
@@ -276,6 +329,17 @@ class DriverApiClient {
         return claimed
       }
       throw err
+    }
+  }
+
+  async getCars(): Promise<FleetVehicle[]> {
+    try {
+      const data = await this.request<FleetVehicle[]>('/api/cars')
+      if (Array.isArray(data) && data.length > 0) return data
+      return FALLBACK_FLEET_VEHICLES
+    } catch (err) {
+      console.log('[API] Using fallback fleet vehicles')
+      return FALLBACK_FLEET_VEHICLES
     }
   }
 }

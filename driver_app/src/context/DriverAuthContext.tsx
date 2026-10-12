@@ -12,6 +12,7 @@ interface DriverAuthContextType {
 }
 
 const DRIVER_AUTH_STORAGE_KEY = '@ripon_limo_driver_user'
+const DRIVER_LOGGED_OUT_KEY = '@ripon_limo_driver_logged_out'
 
 const DriverAuthContext = createContext<DriverAuthContextType>({
   driver: null,
@@ -31,6 +32,13 @@ export const DriverAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const loadDriver = async () => {
     try {
+      const isLoggedOut = await AsyncStorage.getItem(DRIVER_LOGGED_OUT_KEY)
+      if (isLoggedOut === 'true') {
+        setDriver(null)
+        setIsLoading(false)
+        return
+      }
+
       const stored = await AsyncStorage.getItem(DRIVER_AUTH_STORAGE_KEY)
       if (stored) {
         setDriver(JSON.parse(stored))
@@ -48,6 +56,7 @@ export const DriverAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const login = async (email: string, password: string): Promise<User> => {
     const res = await driverApi.login(email, password)
     setDriver(res.user)
+    await AsyncStorage.removeItem(DRIVER_LOGGED_OUT_KEY)
     await AsyncStorage.setItem(DRIVER_AUTH_STORAGE_KEY, JSON.stringify(res.user))
     return res.user
   }
@@ -55,6 +64,7 @@ export const DriverAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const logout = async () => {
     setDriver(null)
     await AsyncStorage.removeItem(DRIVER_AUTH_STORAGE_KEY)
+    await AsyncStorage.setItem(DRIVER_LOGGED_OUT_KEY, 'true')
   }
 
   return (

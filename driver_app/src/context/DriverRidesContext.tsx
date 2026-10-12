@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Linking, Platform, Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Booking, DriverShift } from '../types'
-import { driverApi, FALLBACK_ASSIGNED_BOOKINGS, FALLBACK_AVAILABLE_BOOKINGS } from '../config/api'
+import { Booking, DriverShift, FleetVehicle } from '../types'
+import { driverApi, FALLBACK_ASSIGNED_BOOKINGS, FALLBACK_AVAILABLE_BOOKINGS, FALLBACK_FLEET_VEHICLES } from '../config/api'
 import { useDriverAuth } from './DriverAuthContext'
 
 export type TripStep = 'ASSIGNED' | 'EN_ROUTE' | 'ARRIVED' | 'IN_TRANSIT' | 'COMPLETED'
@@ -11,6 +11,8 @@ interface DriverRidesContextType {
   // Shift state
   shift: DriverShift
   toggleOnline: () => void
+  fleetCars: FleetVehicle[]
+  assignVehicle: (car: FleetVehicle) => Promise<void>
 
   // Rides state
   assignedRides: Booking[]
@@ -31,11 +33,14 @@ interface DriverRidesContextType {
 
 const DriverRidesContext = createContext<DriverRidesContextType | null>(null)
 
+const DRIVER_SHIFT_STORAGE_KEY = '@ripon_limo_driver_shift'
+
 export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { driver } = useDriverAuth()
 
   const [shift, setShift] = useState<DriverShift>({
     isOnline: true,
+    vehicleId: 'cmtsaqvvw000a13is7v3ul06p',
     vehicleName: 'Cadillac Escalade ESV VIP',
     vehiclePlate: 'SUV-001',
     completedTripsToday: 3,
@@ -43,11 +48,27 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     hoursOnlineToday: 5.5,
   })
 
+  const [fleetCars, setFleetCars] = useState<FleetVehicle[]>(FALLBACK_FLEET_VEHICLES)
   const [assignedRides, setAssignedRides] = useState<Booking[]>(FALLBACK_ASSIGNED_BOOKINGS)
   const [availableRides, setAvailableRides] = useState<Booking[]>(FALLBACK_AVAILABLE_BOOKINGS)
   const [activeRide, setActiveRide] = useState<Booking | null>(FALLBACK_ASSIGNED_BOOKINGS[0] || null)
   const [currentTripStep, setCurrentTripStep] = useState<TripStep>('ASSIGNED')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Load saved shift from storage on mount
+  useEffect(() => {
+    const loadSavedShift = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(DRIVER_SHIFT_STORAGE_KEY)
+        if (stored) {
+          setShift(JSON.parse(stored))
+        }
+      } catch (err) {
+        console.log('Error loading saved shift', err)
+      }
+    }
+    loadSavedShift()
+  }, [])
 
   useEffect(() => {
     if (driver?.id) {
@@ -59,12 +80,16 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!driver?.id) return
     setIsLoading(true)
     try {
-      const [assigned, available] = await Promise.all([
+      const [assigned, available, cars] = await Promise.all([
         driverApi.getAssignedBookings(driver.id),
         driverApi.getAvailableBookings(),
+        driverApi.getCars(),
       ])
       setAssignedRides(assigned)
       setAvailableRides(available)
+      if (Array.isArray(cars) && cars.length > 0) {
+        setFleetCars(cars)
+      }
 
       // Set active ride to the first non-completed trip
       const ongoing = assigned.find(b => b.status === 'IN_PROGRESS' || b.status === 'CONFIRMED')
@@ -81,8 +106,26 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }
 
-  const toggleOnline = () => {
-    setShift(prev => ({ ...prev, isOnline: !prev.isOnline }))
+  const toggleOnline = async () => {
+    const updated = { ...shift, isOnline: !shift.isOnline }
+    setShift(updated)
+    try {
+      await AsyncStorage.setItem(DRIVER_SHIFT_STORAGE_KEY, JSON.stringify(updated))
+    } catch { }
+  }
+
+  const assignVehicle = async (car: FleetVehicle) => {
+    const updated: DriverShift = {
+      ...shift,
+      vehicleId: car.id,
+      vehicleName: `${car.brand} ${car.model}`,
+      vehiclePlate: car.plateNumber,
+    }
+    setShift(updated)
+    try {
+      await AsyncStorage.setItem(DRIVER_SHIFT_STORAGE_KEY, JSON.stringify(updated))
+    } catch { }
+    Alert.alert('Vehicle Assigned', `Chauffeur vehicle set to: ${car.brand} ${car.model} (${car.plateNumber})`)
   }
 
   const acceptRide = async (id: string) => {
@@ -177,6 +220,8 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
       value={{
         shift,
         toggleOnline,
+        fleetCars,
+        assignVehicle,
         assignedRides,
         availableRides,
         activeRide,

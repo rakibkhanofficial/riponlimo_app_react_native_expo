@@ -14,6 +14,7 @@ import { Booking } from '../../types'
 import { Card } from '../common/Card'
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
+import { MapboxRouteMap } from '../common/MapboxRouteMap'
 
 interface ActiveTripCardProps {
   booking: Booking
@@ -177,6 +178,14 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
           </View>
         )}
       </View>
+
+      {/* Interactive Mapbox Chauffeur Navigation HUD */}
+      <MapboxRouteMap
+        pickupLocation={booking.pickupLocation}
+        dropLocation={booking.dropLocation || undefined}
+        height={220}
+        showFullscreenToggle={true}
+      />
 
       {/* Airport Flight & Meet & Greet Panel (if Airport ride) */}
       {booking.flightName && (
