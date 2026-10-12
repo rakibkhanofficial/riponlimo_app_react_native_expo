@@ -298,15 +298,28 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
             <ActiveTripCard booking={activeRide} />
           </View>
         ) : (
-          <Card style={styles.noActiveCard}>
-            <View style={styles.noActiveContent}>
-              <Feather name="coffee" size={28} color={theme.primary} />
-              <Text style={[styles.noActiveTitle, { color: theme.textPrimary }]}>No Ongoing Ride</Text>
-              <Text style={[styles.noActiveSub, { color: theme.textMuted }]}>
-                You are currently on standby. Check upcoming scheduled rides below or claim an open run.
-              </Text>
+          <View
+            style={[
+              styles.standbyCard,
+              {
+                backgroundColor: theme.surfaceSubtle,
+                borderColor: theme.borderSubtle,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.standbyIconCircle,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' },
+              ]}
+            >
+              <Feather name="coffee" size={24} color={theme.primary} />
             </View>
-          </Card>
+            <Text style={[styles.standbyTitle, { color: theme.textPrimary }]}>Chauffeur on Standby</Text>
+            <Text style={[styles.standbySub, { color: theme.textMuted }]}>
+              No active trip in progress. Check upcoming scheduled rides below or claim an open run from the marketplace.
+            </Text>
+          </View>
         )}
 
         {/* Upcoming Manifest */}
@@ -320,9 +333,30 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
             <ScheduledRideCard key={ride.id} booking={ride} />
           ))
         ) : (
-          <Text style={[styles.emptyHint, { color: theme.textMuted }]}>
-            No more rides scheduled for your shift today.
-          </Text>
+          <View
+            style={[
+              styles.emptyManifestCard,
+              {
+                backgroundColor: theme.surfaceSubtle,
+                borderColor: theme.borderSubtle,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.emptyManifestIcon,
+                { backgroundColor: isDark ? 'rgba(37,211,102,0.12)' : 'rgba(22,163,74,0.08)' },
+              ]}
+            >
+              <Feather name="calendar" size={20} color="#25D366" />
+            </View>
+            <Text style={[styles.emptyManifestTitle, { color: theme.textPrimary }]}>
+              Manifest All Clear
+            </Text>
+            <Text style={[styles.emptyManifestSub, { color: theme.textMuted }]}>
+              No further rides scheduled for your shift today.
+            </Text>
+          </View>
         )}
       </ScrollView>
 
@@ -567,36 +601,62 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 6,
   },
-  noActiveCard: {
+  standbyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 24,
+    alignItems: 'center',
+    gap: 8,
     marginVertical: 10,
   },
-  noActiveContent: {
+  standbyIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: 'center',
-    paddingVertical: 16,
-    gap: 6,
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  noActiveTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginTop: 4,
+  standbyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
   },
-  noActiveSub: {
+  standbySub: {
     fontSize: 12,
     textAlign: 'center',
-    paddingHorizontal: 20,
     lineHeight: 18,
+    paddingHorizontal: 10,
   },
   upcomingHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 6,
+    marginTop: 18,
+    marginBottom: 8,
   },
-  emptyHint: {
+  emptyManifestCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 24,
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 6,
+  },
+  emptyManifestIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  emptyManifestTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  emptyManifestSub: {
     fontSize: 12,
-    fontStyle: 'italic',
-    paddingVertical: 10,
     textAlign: 'center',
+    lineHeight: 18,
   },
 })

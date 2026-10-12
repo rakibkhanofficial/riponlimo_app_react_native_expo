@@ -8,7 +8,6 @@ import {
   Platform,
   TouchableOpacity,
   StatusBar,
-  Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -17,7 +16,6 @@ import { useTheme } from '../theme/ThemeContext'
 import { useDriverAuth } from '../context/DriverAuthContext'
 import { Input } from '../components/common/Input'
 import { Button } from '../components/common/Button'
-import { Card } from '../components/common/Card'
 
 interface DriverLoginScreenProps {
   onLoginSuccess?: () => void
@@ -79,25 +77,80 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Top Brand Header */}
+          {/* ─── Top Brand Header ─── */}
           <View style={styles.brandContainer}>
-            <View style={[styles.iconCircle, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
-              <MaterialCommunityIcons name="steering" size={32} color={theme.primary} />
+            <View
+              style={[
+                styles.iconGlowRing,
+                {
+                  backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.08)',
+                  borderColor: isDark ? 'rgba(37, 211, 102, 0.2)' : 'rgba(22, 163, 74, 0.15)',
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.iconCircle,
+                  {
+                    backgroundColor: isDark ? 'rgba(37, 211, 102, 0.15)' : 'rgba(22, 163, 74, 0.12)',
+                    borderColor: isDark ? 'rgba(37, 211, 102, 0.35)' : 'rgba(22, 163, 74, 0.25)',
+                  },
+                ]}
+              >
+                <MaterialCommunityIcons name="steering" size={32} color="#25D366" />
+              </View>
             </View>
+
             <Text style={[styles.brandTitle, { color: theme.textPrimary }]}>RIPON CHAUFFEUR</Text>
-            <Text style={[styles.brandSubtitle, { color: theme.textMuted }]}>EXECUTIVE FLEET TERMINAL</Text>
-            <View style={styles.badgeRow}>
+            <Text style={[styles.brandSubtitle, { color: theme.textMuted }]}>
+              EXECUTIVE FLEET TERMINAL
+            </Text>
+
+            <View
+              style={[
+                styles.badgeRow,
+                {
+                  backgroundColor: isDark ? 'rgba(37, 211, 102, 0.1)' : 'rgba(22, 163, 74, 0.08)',
+                  borderColor: isDark ? 'rgba(37, 211, 102, 0.25)' : 'rgba(22, 163, 74, 0.2)',
+                },
+              ]}
+            >
               <View style={styles.onlineDot} />
-              <Text style={styles.badgeText}>DISPATCH SYSTEM ONLINE</Text>
+              <Text style={[styles.badgeText, { color: isDark ? '#25D366' : '#16A34A' }]}>
+                DISPATCH NETWORK ACTIVE
+              </Text>
             </View>
           </View>
 
-          {/* Login Card */}
-          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.formTitle, { color: theme.textPrimary }]}>Terminal Authentication</Text>
-            <Text style={[styles.formSubtitle, { color: theme.textSecondary }]}>
-              Enter authorized chauffeur credentials to access your daily manifest, assign vehicles, and manage assigned runs.
-            </Text>
+          {/* ─── Login Card ─── */}
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.cardBorder,
+                shadowColor: isDark ? '#000000' : '#64748B',
+              },
+            ]}
+          >
+            <View style={styles.cardHeader}>
+              <View
+                style={[
+                  styles.cardHeaderIcon,
+                  { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)' },
+                ]}
+              >
+                <Feather name="shield" size={16} color={theme.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.formTitle, { color: theme.textPrimary }]}>
+                  Chauffeur Authentication
+                </Text>
+                <Text style={[styles.formSubtitle, { color: theme.textMuted }]}>
+                  Authorized access to live runs & manifest
+                </Text>
+              </View>
+            </View>
 
             {errorMessage && (
               <View style={styles.errorBox}>
@@ -106,33 +159,33 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
               </View>
             )}
 
-            <View style={{ gap: 14, marginTop: 10 }}>
+            <View style={styles.inputsGroup}>
               <Input
                 label="Chauffeur ID / Email"
                 value={email}
-                onChangeText={(t) => {
+                onChangeText={t => {
                   setEmail(t)
                   setErrorMessage(null)
                 }}
                 autoCapitalize="none"
                 keyboardType="email-address"
-                leftIcon={<Feather name="mail" size={15} color={theme.textPrimary} />}
+                leftIcon={<Feather name="mail" size={15} color={theme.primary} />}
                 placeholder="driver1@riponlimo.com"
               />
 
               <Input
                 label="Security Password"
                 value={password}
-                onChangeText={(t) => {
+                onChangeText={t => {
                   setPassword(t)
                   setErrorMessage(null)
                 }}
                 isPassword
-                leftIcon={<Feather name="lock" size={15} color={theme.textPrimary} />}
+                leftIcon={<Feather name="lock" size={15} color={theme.primary} />}
                 placeholder="••••••••••••"
               />
 
-              <View style={{ marginTop: 8 }}>
+              <View style={{ marginTop: 6 }}>
                 <Button
                   title={loading ? 'Authenticating...' : 'Sign In to Chauffeur Portal'}
                   onPress={handleLogin}
@@ -142,29 +195,54 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
                 />
               </View>
 
+              {/* ─── Fast Demo Sign In Card ─── */}
               <TouchableOpacity
                 onPress={handleQuickDemo}
-                style={styles.demoButton}
+                style={[
+                  styles.demoCard,
+                  {
+                    backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.06)',
+                    borderColor: isDark ? 'rgba(37, 211, 102, 0.25)' : 'rgba(22, 163, 74, 0.2)',
+                  },
+                ]}
                 activeOpacity={0.8}
               >
-                <Ionicons name="flash" size={15} color="#25D366" />
-                <Text style={styles.demoButtonText}>
-                  Instant Demo Chauffeur Sign In (John Rivera)
-                </Text>
+                <View
+                  style={[
+                    styles.demoIconCircle,
+                    { backgroundColor: isDark ? 'rgba(37, 211, 102, 0.18)' : 'rgba(22, 163, 74, 0.12)' },
+                  ]}
+                >
+                  <Ionicons name="flash" size={16} color="#25D366" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.demoTitle, { color: theme.textPrimary }]}>
+                    Instant Demo Chauffeur
+                  </Text>
+                  <Text style={[styles.demoSub, { color: isDark ? '#25D366' : '#16A34A' }]}>
+                    John Rivera • TLC #884920
+                  </Text>
+                </View>
+                <Feather name="arrow-right" size={16} color="#25D366" />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Footer Security Badges */}
+          {/* ─── Footer Security Badges ─── */}
           <View style={styles.footerContainer}>
             <View style={styles.footerItem}>
               <Feather name="shield" size={12} color={theme.textMuted} />
               <Text style={[styles.footerText, { color: theme.textMuted }]}>TLC License Verified</Text>
             </View>
-            <View style={[styles.footerDivider, { backgroundColor: theme.border }]} />
+            <View style={[styles.footerDivider, { backgroundColor: theme.borderSubtle }]} />
             <View style={styles.footerItem}>
               <Feather name="navigation" size={12} color={theme.textMuted} />
-              <Text style={[styles.footerText, { color: theme.textMuted }]}>Mapbox Live Route HUD</Text>
+              <Text style={[styles.footerText, { color: theme.textMuted }]}>Mapbox Live HUD</Text>
+            </View>
+            <View style={[styles.footerDivider, { backgroundColor: theme.borderSubtle }]} />
+            <View style={styles.footerItem}>
+              <Feather name="lock" size={12} color={theme.textMuted} />
+              <Text style={[styles.footerText, { color: theme.textMuted }]}>256-Bit Encrypted</Text>
             </View>
           </View>
         </ScrollView>
@@ -182,122 +260,156 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 24,
     paddingBottom: 40,
     justifyContent: 'center',
   },
+
+  /* Brand Header */
   brandContainer: {
     alignItems: 'center',
     marginBottom: 24,
   },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#161616',
+  iconGlowRing: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     borderWidth: 1.5,
-    borderColor: '#333333',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   brandTitle: {
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: 2,
-    color: '#FFFFFF',
     textTransform: 'uppercase',
   },
   brandSubtitle: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.5,
-    color: '#888888',
-    marginTop: 3,
+    marginTop: 4,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 10,
+    gap: 7,
+    marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    borderRadius: 8,
-    backgroundColor: 'rgba(37, 211, 102, 0.1)',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(37, 211, 102, 0.25)',
   },
   onlineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
     backgroundColor: '#25D366',
   },
   badgeText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1,
-    color: '#25D366',
   },
+
+  /* Card */
   card: {
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  cardHeaderIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   formTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
+    letterSpacing: -0.2,
   },
   formSubtitle: {
     fontSize: 12,
-    color: '#888888',
-    lineHeight: 18,
-    marginTop: 4,
-    marginBottom: 12,
+    fontWeight: '500',
+    marginTop: 2,
   },
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
     borderWidth: 1,
-    borderColor: '#EF4444',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderColor: 'rgba(239, 68, 68, 0.35)',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 14,
   },
   errorText: {
     color: '#EF4444',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     flex: 1,
   },
-  demoButton: {
+  inputsGroup: {
+    gap: 14,
+  },
+
+  /* Demo Card */
+  demoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 13,
-    borderRadius: 10,
+    gap: 12,
+    padding: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(37, 211, 102, 0.35)',
-    backgroundColor: 'rgba(37, 211, 102, 0.08)',
     marginTop: 6,
   },
-  demoButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    color: '#25D366',
+  demoIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  demoTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  demoSub: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+
+  /* Footer */
   footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
-    marginTop: 24,
+    gap: 12,
+    marginTop: 26,
+    flexWrap: 'wrap',
   },
   footerItem: {
     flexDirection: 'row',
@@ -307,11 +419,9 @@ const styles = StyleSheet.create({
   footerDivider: {
     width: 1,
     height: 12,
-    backgroundColor: '#333333',
   },
   footerText: {
     fontSize: 11,
-    color: '#888888',
     fontWeight: '600',
   },
 })
