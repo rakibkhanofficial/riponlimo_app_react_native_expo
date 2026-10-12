@@ -250,7 +250,7 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
               <Feather
                 name="chevron-right"
                 size={18}
-                color={currentTripStep === 'IN_TRANSIT' ? '#FFFFFF' : theme.buttonText}
+                color={currentTripStep === 'IN_TRANSIT' ? '#FFFFFF' : (theme.isDark ? '#000000' : '#FFFFFF')}
               />
             }
           />

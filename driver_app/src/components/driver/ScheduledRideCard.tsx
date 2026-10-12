@@ -109,8 +109,10 @@ export const ScheduledRideCard: React.FC<ScheduledRideCardProps> = ({
             }}
             style={[styles.startBtn, { backgroundColor: theme.primary }]}
           >
-            <Text style={[styles.startBtnText, { color: theme.buttonText }]}>Set As Active Run</Text>
-            <Feather name="arrow-right" size={13} color={theme.buttonText} />
+            <Text style={[styles.startBtnText, { color: theme.isDark ? '#000000' : '#FFFFFF' }]}>
+              Set As Active Run
+            </Text>
+            <Feather name="arrow-right" size={13} color={theme.isDark ? '#000000' : '#FFFFFF'} />
           </TouchableOpacity>
         )}
       </View>
@@ -212,7 +214,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   startBtnText: {
-    color: '#0A0D14',
     fontSize: 11,
     fontWeight: '800',
   },

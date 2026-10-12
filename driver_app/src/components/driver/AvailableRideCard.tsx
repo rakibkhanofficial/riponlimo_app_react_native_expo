@@ -103,8 +103,10 @@ export const AvailableRideCard: React.FC<AvailableRideCardProps> = ({ booking })
           onPress={handleClaim}
           style={[styles.claimBtn, { backgroundColor: theme.primary }]}
         >
-          <Feather name="check-circle" size={13} color={theme.buttonText} />
-          <Text style={[styles.claimBtnText, { color: theme.buttonText }]}>Claim & Accept Ride</Text>
+          <Feather name="check-circle" size={13} color={theme.isDark ? '#000000' : '#FFFFFF'} />
+          <Text style={[styles.claimBtnText, { color: theme.isDark ? '#000000' : '#FFFFFF' }]}>
+            Claim & Accept Ride
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -201,7 +203,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   claimBtnText: {
-    color: '#0A0D14',
     fontSize: 11,
     fontWeight: '800',
   },

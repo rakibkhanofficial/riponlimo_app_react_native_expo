@@ -82,7 +82,7 @@ export const Button: React.FC<ButtonProps> = ({
   const getTextColor = (): string => {
     switch (variant) {
       case 'primary':
-        return theme.buttonText
+        return theme.isDark ? '#000000' : '#FFFFFF'
       case 'secondary':
         return theme.textPrimary
       case 'outline':

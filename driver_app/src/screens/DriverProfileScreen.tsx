@@ -18,10 +18,8 @@ import { useDriverRides } from '../context/DriverRidesContext'
 import { Header } from '../components/common/Header'
 import { Card } from '../components/common/Card'
 import { Button } from '../components/common/Button'
-import { Input } from '../components/common/Input'
 import { Badge } from '../components/common/Badge'
 import { VehicleAssignmentModal } from '../components/driver/VehicleAssignmentModal'
-import { driverApi, DEFAULT_BASE_URL } from '../config/api'
 
 interface DriverProfileScreenProps {
   onOpenAuth: () => void
@@ -32,27 +30,7 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
   const { driver, logout } = useDriverAuth()
   const { shift } = useDriverRides()
 
-  const [apiUrl, setApiUrl] = useState(driverApi.getBaseUrl())
-  const [showApiConfig, setShowApiConfig] = useState(false)
   const [showVehicleModal, setShowVehicleModal] = useState(false)
-
-  const handleSaveApiUrl = async () => {
-    try {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      await driverApi.setBaseUrl(apiUrl)
-      Alert.alert('API Updated', `Backend API URL saved: ${apiUrl}`)
-      setShowApiConfig(false)
-    } catch (e: any) {
-      Alert.alert('Error', e.message)
-    }
-  }
-
-  const handleResetApiUrl = async () => {
-    setApiUrl(DEFAULT_BASE_URL)
-    await driverApi.setBaseUrl(DEFAULT_BASE_URL)
-    Alert.alert('API Reset', `Reset to default: ${DEFAULT_BASE_URL}`)
-    setShowApiConfig(false)
-  }
 
   const handleCallDispatch = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -209,54 +187,7 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
           </TouchableOpacity>
         </Card>
 
-        {/* Backend Endpoint Config */}
-        <Card
-          title="Next.js Backend Server"
-          subtitle="Configure live API connection endpoint"
-          icon={<Feather name="server" size={16} color={theme.primary} />}
-          rightAction={
-            <TouchableOpacity onPress={() => setShowApiConfig(!showApiConfig)}>
-              <Feather
-                name={showApiConfig ? 'chevron-up' : 'settings'}
-                size={16}
-                color={theme.primary}
-              />
-            </TouchableOpacity>
-          }
-        >
-          <View style={styles.apiStatusRow}>
-            <View style={[styles.statusDot, { backgroundColor: '#10B981' }]} />
-            <Text style={[styles.apiUrlText, { color: theme.textSecondary }]} numberOfLines={1}>
-              {driverApi.getBaseUrl()}
-            </Text>
-          </View>
 
-          {showApiConfig && (
-            <View style={{ marginTop: 12 }}>
-              <Input
-                label="Backend URL (Port 3010)"
-                value={apiUrl}
-                onChangeText={setApiUrl}
-                placeholder="http://localhost:3010 or http://192.168.x.x:3010"
-              />
-              <View style={styles.apiActionRow}>
-                <TouchableOpacity
-                  onPress={handleResetApiUrl}
-                  style={[styles.apiResetBtn, { borderColor: theme.border }]}
-                >
-                  <Text style={[styles.apiResetText, { color: theme.textMuted }]}>Reset Default</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={handleSaveApiUrl}
-                  style={[styles.apiSaveBtn, { backgroundColor: theme.primary }]}
-                >
-                  <Text style={[styles.apiSaveText, { color: theme.buttonText }]}>Save Endpoint</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </Card>
 
         {/* Switch Chauffeur Account */}
         <View style={{ marginTop: 10, gap: 10 }}>
@@ -407,45 +338,6 @@ const styles = StyleSheet.create({
   },
   dispatchBtnText: {
     fontSize: 13,
-    fontWeight: '700',
-  },
-  apiStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  apiUrlText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  apiActionRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    marginTop: 10,
-  },
-  apiResetBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  apiResetText: {
-    fontSize: 11,
-  },
-  apiSaveBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  apiSaveText: {
-    color: '#0A0D14',
-    fontSize: 11,
     fontWeight: '700',
   },
 })

@@ -109,50 +109,71 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
         {/* Shift Metrics Bar */}
         <View style={[styles.metricsBar, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
           <View style={styles.metricItem}>
-            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>Today's Earnings</Text>
+            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>TOTAL EARNINGS</Text>
             <Text style={[styles.metricValue, { color: theme.primary }]}>
               ${shift.totalEarningsToday}
             </Text>
+            <Text style={[styles.metricSub, { color: theme.textMuted }]}>Today's Payout</Text>
           </View>
 
           <View style={[styles.metricDivider, { backgroundColor: theme.borderSubtle }]} />
 
           <View style={styles.metricItem}>
-            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>Trips Done</Text>
+            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>TRIPS DONE</Text>
             <Text style={[styles.metricValue, { color: theme.textPrimary }]}>
               {shift.completedTripsToday}
             </Text>
+            <Text style={[styles.metricSub, { color: theme.textMuted }]}>Completed</Text>
           </View>
 
           <View style={[styles.metricDivider, { backgroundColor: theme.borderSubtle }]} />
 
           <View style={styles.metricItem}>
-            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>Shift Hours</Text>
+            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>SHIFT HOURS</Text>
             <Text style={[styles.metricValue, { color: theme.textPrimary }]}>
               {shift.hoursOnlineToday}h
             </Text>
+            <Text style={[styles.metricSub, { color: theme.textMuted }]}>Active Duty</Text>
           </View>
         </View>
 
         {/* Assigned Vehicle Overview (Interactive Selector) */}
         <TouchableOpacity
-          activeOpacity={0.8}
+          activeOpacity={0.85}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
             setShowVehicleModal(true)
           }}
-          style={[styles.vehicleRow, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}
+          style={[styles.vehicleCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
         >
-          <MaterialCommunityIcons name="car-limousine" size={22} color={theme.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.vehicleLabel, { color: theme.textMuted }]}>Assigned Chauffeur Vehicle</Text>
-            <Text style={[styles.vehicleName, { color: theme.textPrimary }]}>{shift.vehicleName}</Text>
+          <View style={styles.vehicleTopRow}>
+            <View style={[styles.vehicleIconBadge, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
+              <MaterialCommunityIcons name="car-limousine" size={26} color={theme.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.vehicleCardHeader, { color: theme.textMuted }]}>ASSIGNED FLEET VEHICLE</Text>
+              <Text style={[styles.vehicleCardTitle, { color: theme.textPrimary }]}>{shift.vehicleName}</Text>
+            </View>
+            <View style={[styles.switchVehicleBtn, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}>
+              <Text style={[styles.switchVehicleBtnText, { color: theme.primary }]}>SWITCH</Text>
+              <Feather name="refresh-cw" size={12} color={theme.primary} />
+            </View>
           </View>
-          <View style={styles.vehicleActionGroup}>
-            <Badge label={`Plate: ${shift.vehiclePlate}`} variant="primary" size="sm" />
-            <View style={[styles.switchCarBtn, { borderColor: theme.border }]}>
-              <Text style={[styles.switchCarText, { color: theme.textSecondary }]}>SWITCH</Text>
-              <Feather name="chevron-right" size={12} color={theme.textSecondary} />
+
+          <View style={[styles.vehicleBottomRow, { borderTopColor: theme.borderSubtle }]}>
+            <View style={styles.plateContainer}>
+              <Text style={[styles.plateLabel, { color: theme.textMuted }]}>PLATE</Text>
+              <Text style={[styles.plateNumber, { color: theme.primary }]}>{shift.vehiclePlate}</Text>
+            </View>
+            <View style={styles.specTagsRow}>
+              <View style={[styles.specTag, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+                <Feather name="shield" size={11} color={theme.driverActive} />
+                <Text style={[styles.specTagText, { color: theme.textSecondary }]}>TLC Livery Insured</Text>
+              </View>
+              <View style={[styles.specTag, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+                <Feather name="users" size={11} color={theme.textMuted} />
+                <Text style={[styles.specTagText, { color: theme.textSecondary }]}>VIP Chauffeur Ready</Text>
+              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -213,10 +234,11 @@ const styles = StyleSheet.create({
   metricsBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 8,
+    borderRadius: 16,
     borderWidth: 1.2,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   metricItem: {
     flex: 1,
@@ -224,37 +246,107 @@ const styles = StyleSheet.create({
   },
   metricDivider: {
     width: 1,
-    height: 28,
+    height: 38,
   },
   metricLabel: {
     fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    fontWeight: '600',
+    letterSpacing: 0.8,
+    fontWeight: '700',
   },
   metricValue: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: 2,
+    fontSize: 22,
+    fontWeight: '900',
+    marginTop: 3,
+    letterSpacing: -0.5,
   },
-  vehicleRow: {
+  metricSub: {
+    fontSize: 9,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  vehicleCard: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    marginBottom: 14,
+    gap: 12,
+  },
+  vehicleTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 10,
-    marginBottom: 14,
+    gap: 12,
   },
-  vehicleLabel: {
-    fontSize: 9,
-    textTransform: 'uppercase',
+  vehicleIconBadge: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vehicleCardHeader: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  vehicleCardTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    marginTop: 2,
+    letterSpacing: 0.2,
+  },
+  switchVehicleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  switchVehicleBtnText: {
+    fontSize: 10,
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
-  vehicleName: {
-    fontSize: 12,
+  vehicleBottomRow: {
+    paddingTop: 10,
+    borderTopWidth: 1,
+    gap: 8,
+  },
+  plateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  plateLabel: {
+    fontSize: 10,
     fontWeight: '700',
-    marginTop: 1,
+    letterSpacing: 0.5,
+  },
+  plateNumber: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  specTagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  specTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  specTagText: {
+    fontSize: 10,
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 14,
@@ -335,24 +427,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.8,
-  },
-  vehicleActionGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  switchCarBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  switchCarText: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
   },
 })
