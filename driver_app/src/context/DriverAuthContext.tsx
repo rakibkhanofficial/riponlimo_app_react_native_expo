@@ -43,11 +43,10 @@ export const DriverAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (stored) {
         setDriver(JSON.parse(stored))
       } else {
-        // Auto initialize demo chauffeur on first launch for smooth out-of-the-box experience
-        setDriver(FALLBACK_DRIVER_USER)
+        setDriver(null)
       }
     } catch {
-      setDriver(FALLBACK_DRIVER_USER)
+      setDriver(null)
     } finally {
       setIsLoading(false)
     }

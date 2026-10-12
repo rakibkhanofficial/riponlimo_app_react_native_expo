@@ -49,9 +49,9 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
   })
 
   const [fleetCars, setFleetCars] = useState<FleetVehicle[]>(FALLBACK_FLEET_VEHICLES)
-  const [assignedRides, setAssignedRides] = useState<Booking[]>(FALLBACK_ASSIGNED_BOOKINGS)
-  const [availableRides, setAvailableRides] = useState<Booking[]>(FALLBACK_AVAILABLE_BOOKINGS)
-  const [activeRide, setActiveRide] = useState<Booking | null>(FALLBACK_ASSIGNED_BOOKINGS[0] || null)
+  const [assignedRides, setAssignedRides] = useState<Booking[]>([])
+  const [availableRides, setAvailableRides] = useState<Booking[]>([])
+  const [activeRide, setActiveRide] = useState<Booking | null>(null)
   const [currentTripStep, setCurrentTripStep] = useState<TripStep>('ASSIGNED')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -73,6 +73,10 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
   useEffect(() => {
     if (driver?.id) {
       refreshRides()
+    } else {
+      setAssignedRides([])
+      setAvailableRides([])
+      setActiveRide(null)
     }
   }, [driver])
 

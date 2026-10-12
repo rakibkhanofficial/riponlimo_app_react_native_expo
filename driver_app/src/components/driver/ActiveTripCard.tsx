@@ -73,7 +73,7 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
       : booking.pickupLocation
 
   return (
-    <Card highlighted style={styles.card}>
+    <Card style={styles.card}>
       {/* Top Banner with reservation code and status */}
       <View style={styles.topRow}>
         <View style={styles.codeRow}>
@@ -81,7 +81,7 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
             <View style={[styles.pulseDot, { backgroundColor: theme.driverActive }]} />
             <Text style={[styles.activePillText, { color: theme.driverActive }]}>ACTIVE RUN</Text>
           </View>
-          <Text style={[styles.resCode, { color: theme.primary }]}>#{reservationCode}</Text>
+          <Text style={[styles.resCode, { color: theme.textPrimary }]}>#{reservationCode}</Text>
         </View>
         <Badge
           label={booking.tripType.replace(/_/g, ' ')}
@@ -94,7 +94,7 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
       <View style={[styles.phaseBox, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
         <View style={styles.phaseHeader}>
           <Text style={[styles.phaseLabel, { color: theme.textMuted }]}>Current Chauffeur Phase</Text>
-          <Text style={[styles.phaseTitle, { color: theme.primary }]}>
+          <Text style={[styles.phaseTitle, { color: theme.textPrimary }]}>
             {getStepTitle(currentTripStep)}
           </Text>
         </View>
@@ -110,7 +110,7 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
                 style={[
                   styles.progressBarSegment,
                   {
-                    backgroundColor: isDone ? theme.primary : theme.border,
+                    backgroundColor: isDone ? '#25D366' : 'rgba(255, 255, 255, 0.08)',
                   },
                 ]}
               />
@@ -120,10 +120,10 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
       </View>
 
       {/* Passenger & Communication Panel */}
-      <View style={[styles.passengerPanel, { backgroundColor: theme.surface, borderColor: theme.borderSubtle }]}>
+      <View style={[styles.passengerPanel, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
         <View style={styles.passengerInfo}>
-          <View style={[styles.passengerAvatar, { backgroundColor: theme.primaryLight }]}>
-            <Feather name="user" size={18} color={theme.primary} />
+          <View style={[styles.passengerAvatar, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}>
+            <Feather name="user" size={18} color={theme.textPrimary} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.passengerName, { color: theme.textPrimary }]}>
@@ -138,17 +138,17 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
         <View style={styles.commsButtons}>
           <TouchableOpacity
             onPress={() => callPassenger(booking.user?.phone)}
-            style={[styles.commBtn, { backgroundColor: theme.surfaceSubtle, borderColor: theme.primary }]}
+            style={[styles.commBtn, { backgroundColor: theme.card, borderColor: theme.borderSubtle }]}
           >
-            <Feather name="phone" size={16} color={theme.primary} />
-            <Text style={[styles.commBtnText, { color: theme.primary }]}>Call</Text>
+            <Feather name="phone" size={15} color="#25D366" />
+            <Text style={[styles.commBtnText, { color: theme.textPrimary }]}>Call</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => smsPassenger(booking.user?.phone)}
-            style={[styles.commBtn, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}
+            style={[styles.commBtn, { backgroundColor: theme.card, borderColor: theme.borderSubtle }]}
           >
-            <Feather name="message-square" size={16} color={theme.textPrimary} />
+            <Feather name="message-square" size={15} color={theme.textPrimary} />
             <Text style={[styles.commBtnText, { color: theme.textPrimary }]}>SMS</Text>
           </TouchableOpacity>
         </View>
@@ -229,13 +229,13 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
       {/* Navigation Quick Action */}
       <TouchableOpacity
         onPress={() => openNavigation(currentDestination)}
-        style={[styles.navActionBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        style={[styles.navActionBtn, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}
       >
-        <Feather name="navigation" size={16} color={theme.primary} />
+        <Feather name="navigation" size={15} color="#25D366" />
         <Text style={[styles.navActionText, { color: theme.textPrimary }]}>
           Open GPS Navigation ({currentTripStep === 'IN_TRANSIT' ? 'Drop-off' : 'Pickup'})
         </Text>
-        <Feather name="external-link" size={14} color={theme.primary} />
+        <Feather name="external-link" size={14} color={theme.textMuted} />
       </TouchableOpacity>
 
       {/* Phase Progression Big Action Button */}

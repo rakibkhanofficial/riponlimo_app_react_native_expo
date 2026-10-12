@@ -29,8 +29,7 @@ export const Card: React.FC<CardProps> = ({
         styles.card,
         {
           backgroundColor: theme.card,
-          borderColor: highlighted ? theme.primary : theme.cardBorder,
-          shadowColor: theme.isDark ? '#000000' : '#64748B',
+          borderColor: highlighted ? theme.cardBorderHighlight : theme.cardBorder,
         },
         style,
       ]}
@@ -41,7 +40,7 @@ export const Card: React.FC<CardProps> = ({
             {icon && <View style={styles.iconWrapper}>{icon}</View>}
             <View>
               {title && (
-                <Text style={[styles.title, { color: theme.primary }]}>
+                <Text style={[styles.title, { color: theme.textPrimary }]}>
                   {title}
                 </Text>
               )}
@@ -62,13 +61,9 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    borderWidth: 1.2,
-    marginVertical: 8,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 3,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginVertical: 6,
     overflow: 'hidden',
   },
   header: {

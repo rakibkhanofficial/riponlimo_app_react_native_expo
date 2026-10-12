@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Ripon Chauffeur",
+    "name": "Ripon Limo Driver",
     "slug": "ripon-limo-driver",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0A0D14"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,7 +18,7 @@
     "android": {
       "package": "com.riponlimo.driver",
       "adaptiveIcon": {
-        "backgroundColor": "#0A0D14",
+        "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"

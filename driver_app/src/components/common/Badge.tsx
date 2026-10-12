@@ -26,7 +26,7 @@ export const Badge: React.FC<BadgeProps> = ({
       case 'neutral':
         return { bg: theme.surfaceSubtle, text: theme.textMuted, border: theme.border }
       default:
-        return { bg: theme.badgeBackground, text: theme.primary, border: theme.primary }
+        return { bg: theme.badgeBackground, text: theme.textPrimary, border: theme.border }
     }
   }
 

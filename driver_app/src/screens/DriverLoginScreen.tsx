@@ -93,7 +93,7 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
           </View>
 
           {/* Login Card */}
-          <View style={[styles.card, { backgroundColor: '#0A0A0A', borderColor: '#222222' }]}>
+          <View style={[styles.card, { backgroundColor: '#0C0C0E', borderColor: '#1C1C1E' }]}>
             <Text style={styles.formTitle}>Terminal Authentication</Text>
             <Text style={styles.formSubtitle}>
               Enter authorized chauffeur credentials to access your daily manifest, assign vehicles, and manage assigned runs.
@@ -220,12 +220,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8,
     backgroundColor: 'rgba(37, 211, 102, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(37, 211, 102, 0.3)',
+    borderColor: 'rgba(37, 211, 102, 0.25)',
   },
   onlineDot: {
     width: 6,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     color: '#25D366',
   },
   card: {
-    borderRadius: 2,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 20,
   },
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EF4444',
     padding: 10,
-    borderRadius: 2,
+    borderRadius: 8,
     marginBottom: 10,
   },
   errorText: {
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
-    borderRadius: 2,
+    paddingVertical: 13,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(37, 211, 102, 0.4)',
+    borderColor: 'rgba(37, 211, 102, 0.35)',
     backgroundColor: 'rgba(37, 211, 102, 0.08)',
-    marginTop: 4,
+    marginTop: 6,
   },
   demoButtonText: {
     fontSize: 12,

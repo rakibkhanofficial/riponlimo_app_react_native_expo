@@ -72,7 +72,7 @@ export const VehicleAssignmentModal: React.FC<VehicleAssignmentModalProps> = ({
                       styles.carCard,
                       {
                         backgroundColor: isSelected ? theme.surfaceSubtle : theme.surface,
-                        borderColor: isSelected ? theme.primary : theme.border,
+                        borderColor: isSelected ? theme.driverActive : theme.border,
                         borderWidth: isSelected ? 1.5 : 1,
                       },
                     ]}
@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     maxHeight: '85%',
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   closeBtn: {
     width: 36,
     height: 36,
-    borderRadius: 2,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   carCard: {
     padding: 14,
-    borderRadius: 2,
+    borderRadius: 14,
     gap: 8,
   },
   carTopRow: {
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 2,
+    borderRadius: 6,
     borderWidth: 1,
   },
   activeBadgeText: {

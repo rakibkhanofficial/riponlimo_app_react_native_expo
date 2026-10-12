@@ -68,13 +68,13 @@ export const RidesScheduleScreen: React.FC<RidesScheduleScreenProps> = ({
             }}
             style={[
               styles.tabBtn,
-              tab === 'UPCOMING' && [styles.activeTab, { backgroundColor: theme.surface, borderColor: theme.primary }],
+              tab === 'UPCOMING' && [styles.activeTab, { backgroundColor: theme.surface, borderColor: theme.border }],
             ]}
           >
             <Text
               style={[
                 styles.tabText,
-                { color: tab === 'UPCOMING' ? theme.primary : theme.textMuted, fontWeight: tab === 'UPCOMING' ? '700' : '500' },
+                { color: tab === 'UPCOMING' ? theme.textPrimary : theme.textMuted, fontWeight: tab === 'UPCOMING' ? '700' : '500' },
               ]}
             >
               Upcoming Manifest
@@ -88,13 +88,13 @@ export const RidesScheduleScreen: React.FC<RidesScheduleScreenProps> = ({
             }}
             style={[
               styles.tabBtn,
-              tab === 'COMPLETED' && [styles.activeTab, { backgroundColor: theme.surface, borderColor: theme.primary }],
+              tab === 'COMPLETED' && [styles.activeTab, { backgroundColor: theme.surface, borderColor: theme.border }],
             ]}
           >
             <Text
               style={[
                 styles.tabText,
-                { color: tab === 'COMPLETED' ? theme.primary : theme.textMuted, fontWeight: tab === 'COMPLETED' ? '700' : '500' },
+                { color: tab === 'COMPLETED' ? theme.textPrimary : theme.textMuted, fontWeight: tab === 'COMPLETED' ? '700' : '500' },
               ]}
             >
               Completed Runs

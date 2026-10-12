@@ -68,9 +68,9 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Driver Profile Card */}
-        <Card highlighted style={styles.cardMargin}>
+        <Card style={styles.cardMargin}>
           <View style={styles.profileRow}>
-            <View style={[styles.avatar, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
+            <View style={[styles.avatar, { backgroundColor: theme.primaryLight, borderColor: theme.border }]}>
               <Text style={[styles.avatarText, { color: theme.primary }]}>
                 {driver?.name ? driver.name.charAt(0).toUpperCase() : 'J'}
               </Text>
@@ -200,10 +200,10 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
         >
           <TouchableOpacity
             onPress={handleCallDispatch}
-            style={[styles.dispatchBtn, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]}
+            style={[styles.dispatchBtn, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}
           >
-            <Feather name="phone" size={16} color={theme.primary} />
-            <Text style={[styles.dispatchBtnText, { color: theme.primary }]}>
+            <Feather name="phone" size={16} color={theme.textPrimary} />
+            <Text style={[styles.dispatchBtnText, { color: theme.textPrimary }]}>
               Call Dispatch: +1 (646) 517-4942
             </Text>
           </TouchableOpacity>
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 2,
+    borderRadius: 8,
     borderWidth: 1,
   },
   switchVehicleText: {

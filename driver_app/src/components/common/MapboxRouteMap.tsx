@@ -392,20 +392,21 @@ export const MapboxRouteMap: React.FC<MapboxRouteMapProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    borderRadius: 2,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#222222',
+    borderColor: '#1C1C1E',
     overflow: 'hidden',
     backgroundColor: '#0A0A0A',
     marginVertical: 10,
   },
   headerBar: {
-    height: 34,
+    height: 36,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     borderBottomWidth: 1,
+    borderBottomColor: '#1C1C1E',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -432,8 +433,9 @@ const styles = StyleSheet.create({
   smallBtn: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 2,
+    borderRadius: 6,
     borderWidth: 1,
+    borderColor: '#2C2C2E',
   },
   smallBtnText: {
     fontSize: 9,

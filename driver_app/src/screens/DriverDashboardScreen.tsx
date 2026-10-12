@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 2,
+    borderRadius: 14,
     borderWidth: 1,
     marginBottom: 10,
     gap: 10,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   dutyToggleBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 2,
+    borderRadius: 8,
     borderWidth: 1,
   },
   dutyToggleText: {
@@ -345,9 +345,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    borderRadius: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
     borderWidth: 1,
   },
   switchCarText: {
