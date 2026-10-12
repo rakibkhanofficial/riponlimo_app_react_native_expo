@@ -39,10 +39,11 @@ const STEP_ICONS: Record<TripStep, string> = {
 }
 
 export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
-  const { theme } = useTheme()
+  const { theme, isDark } = useTheme()
   const {
     currentTripStep,
     advanceActiveTrip,
+    advanceToNextTrip,
     openNavigation,
     callPassenger,
     smsPassenger,
@@ -54,30 +55,30 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
   const getStepTitle = (step: TripStep) => {
     switch (step) {
       case 'ASSIGNED':
-        return 'Dispatched — Ready to Roll'
+        return 'Step 1 of 5: Dispatched — Ready to Roll'
       case 'EN_ROUTE':
-        return 'En Route to Pickup'
+        return 'Step 2 of 5: En Route to Pickup Location'
       case 'ARRIVED':
-        return 'Arrived at Pickup'
+        return 'Step 3 of 5: Arrived at Pickup Location'
       case 'IN_TRANSIT':
-        return 'Passenger In Transit'
+        return 'Step 4 of 5: Passenger In Transit to Drop-off'
       case 'COMPLETED':
-        return 'Trip Completed'
+        return 'Step 5 of 5: Trip Completed Successfully'
     }
   }
 
   const getActionButtonText = (step: TripStep) => {
     switch (step) {
       case 'ASSIGNED':
-        return 'Start Journey to Pickup'
+        return 'Step 1 → Step 2: Start Journey to Pickup'
       case 'EN_ROUTE':
-        return 'I Have Arrived at Pickup'
+        return 'Step 2 → Step 3: I Have Arrived at Pickup'
       case 'ARRIVED':
-        return 'Passenger Boarded • Start Trip'
+        return 'Step 3 → Step 4: Passenger Boarded • Start Trip'
       case 'IN_TRANSIT':
-        return 'Complete Ride & Record Fare'
+        return 'Step 4 → Step 5: Complete Ride & Record Fare'
       case 'COMPLETED':
-        return 'Ride Finalized'
+        return 'Start Next Scheduled Run'
     }
   }
 
@@ -307,8 +308,47 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
         )}
       </View>
 
-      {/* Phase Progression Big Action Button */}
-      {currentTripStep !== 'COMPLETED' && (
+      {/* Phase Progression Big Action Button / Completed Summary */}
+      {currentTripStep === 'COMPLETED' ? (
+        <View
+          style={[
+            styles.completedCard,
+            {
+              backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.06)',
+              borderColor: isDark ? 'rgba(37, 211, 102, 0.25)' : 'rgba(22, 163, 74, 0.2)',
+            },
+          ]}
+        >
+          <View style={styles.completedHeader}>
+            <View
+              style={[
+                styles.completedIconCircle,
+                { backgroundColor: isDark ? 'rgba(37, 211, 102, 0.2)' : 'rgba(22, 163, 74, 0.15)' },
+              ]}
+            >
+              <Feather name="check" size={20} color="#25D366" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.completedTitle, { color: theme.textPrimary }]}>
+                Trip Finalized & Closed
+              </Text>
+              <Text style={[styles.completedSub, { color: isDark ? '#25D366' : '#16A34A' }]}>
+                +${booking.totalAmount} Fare added to today's shift earnings
+              </Text>
+            </View>
+          </View>
+          <Button
+            title="Start Next Scheduled Run"
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+              advanceToNextTrip()
+            }}
+            size="lg"
+            variant="primary"
+            iconRight={<Feather name="arrow-right" size={16} color={isDark ? '#000000' : '#FFFFFF'} />}
+          />
+        </View>
+      ) : (
         <View style={styles.mainActionContainer}>
           <Button
             title={getActionButtonText(currentTripStep)}
@@ -547,5 +587,33 @@ const styles = StyleSheet.create({
   },
   mainActionContainer: {
     marginTop: 4,
+  },
+  completedCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    gap: 14,
+    marginTop: 4,
+  },
+  completedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  completedIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completedTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  completedSub: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 2,
   },
 })

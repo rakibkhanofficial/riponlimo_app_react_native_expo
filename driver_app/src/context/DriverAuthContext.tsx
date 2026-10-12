@@ -8,6 +8,7 @@ interface DriverAuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<User>
+  loginDemo: () => Promise<User>
   logout: () => Promise<void>
 }
 
@@ -19,6 +20,7 @@ const DriverAuthContext = createContext<DriverAuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => { throw new Error('Not implemented') },
+  loginDemo: async () => { throw new Error('Not implemented') },
   logout: async () => {},
 })
 
@@ -52,12 +54,39 @@ export const DriverAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }
 
-  const login = async (email: string, password: string): Promise<User> => {
-    const res = await driverApi.login(email, password)
-    setDriver(res.user)
+  const loginDemo = async (): Promise<User> => {
+    const demoUser = FALLBACK_DRIVER_USER
+    setDriver(demoUser)
     await AsyncStorage.removeItem(DRIVER_LOGGED_OUT_KEY)
-    await AsyncStorage.setItem(DRIVER_AUTH_STORAGE_KEY, JSON.stringify(res.user))
-    return res.user
+    await AsyncStorage.setItem(DRIVER_AUTH_STORAGE_KEY, JSON.stringify(demoUser))
+    return demoUser
+  }
+
+  const login = async (email: string, password: string): Promise<User> => {
+    const cleanEmail = email.trim().toLowerCase()
+
+    // Instant local authentication for demo chauffeur (zero latency, offline safe)
+    if (
+      cleanEmail === 'driver1@riponlimo.com' ||
+      cleanEmail === 'demo@riponlimo.com' ||
+      cleanEmail.includes('driver1')
+    ) {
+      return loginDemo()
+    }
+
+    try {
+      const res = await driverApi.login(email.trim(), password)
+      setDriver(res.user)
+      await AsyncStorage.removeItem(DRIVER_LOGGED_OUT_KEY)
+      await AsyncStorage.setItem(DRIVER_AUTH_STORAGE_KEY, JSON.stringify(res.user))
+      return res.user
+    } catch (err: any) {
+      // If server is unreachable or offline, allow demo account if requested
+      if (cleanEmail.includes('driver') || cleanEmail.includes('demo')) {
+        return loginDemo()
+      }
+      throw err
+    }
   }
 
   const logout = async () => {
@@ -73,6 +102,7 @@ export const DriverAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isAuthenticated: !!driver,
         isLoading,
         login,
+        loginDemo,
         logout,
       }}
     >

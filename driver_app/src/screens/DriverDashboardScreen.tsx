@@ -36,6 +36,7 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
     activeRide,
     assignedRides,
     refreshRides,
+    resetDemoShift,
     isLoading,
   } = useDriverRides()
   const [showVehicleModal, setShowVehicleModal] = useState(false)
@@ -48,6 +49,11 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
   const handleToggleDuty = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     toggleOnline()
+  }
+
+  const handleResetShift = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    resetDemoShift()
   }
 
   return (
@@ -66,6 +72,93 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
           />
         }
       >
+
+        {/* ─── Shift Step-by-Step Flow Bar ─── */}
+        <View style={[styles.stepperContainer, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+          <View style={styles.stepperHeader}>
+            <View style={styles.stepperHeaderLeft}>
+              <View style={[styles.stepperIconCircle, { backgroundColor: isDark ? 'rgba(37,211,102,0.15)' : 'rgba(22,163,74,0.1)' }]}>
+                <Feather name="navigation" size={12} color="#25D366" />
+              </View>
+              <Text style={[styles.stepperTitle, { color: theme.textMuted }]}>SHIFT WORKFLOW</Text>
+            </View>
+            <TouchableOpacity onPress={handleResetShift} style={styles.resetShiftBtn}>
+              <Feather name="rotate-ccw" size={11} color="#25D366" />
+              <Text style={styles.resetShiftText}>Reset Demo Run</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.stepperRow}>
+            {/* Step 1: Duty Online */}
+            <TouchableOpacity
+              onPress={handleToggleDuty}
+              activeOpacity={0.8}
+              style={[
+                styles.stepBadge,
+                {
+                  backgroundColor: shift.isOnline ? (isDark ? 'rgba(37,211,102,0.12)' : 'rgba(22,163,74,0.08)') : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+                  borderColor: shift.isOnline ? '#25D366' : theme.borderSubtle,
+                },
+              ]}
+            >
+              <View style={[styles.stepNumCircle, { backgroundColor: shift.isOnline ? '#25D366' : theme.textMuted }]}>
+                {shift.isOnline ? (
+                  <Feather name="check" size={10} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.stepNumText}>1</Text>
+                )}
+              </View>
+              <Text style={[styles.stepBadgeText, { color: shift.isOnline ? (isDark ? '#25D366' : '#16A34A') : theme.textMuted }]}>
+                {shift.isOnline ? '1. On Duty' : '1. Off Duty'}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={[styles.stepArrowLine, { backgroundColor: theme.borderSubtle }]} />
+
+            {/* Step 2: Vehicle Selected */}
+            <TouchableOpacity
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                setShowVehicleModal(true)
+              }}
+              activeOpacity={0.8}
+              style={[
+                styles.stepBadge,
+                {
+                  backgroundColor: isDark ? 'rgba(37,211,102,0.12)' : 'rgba(22,163,74,0.08)',
+                  borderColor: '#25D366',
+                },
+              ]}
+            >
+              <View style={[styles.stepNumCircle, { backgroundColor: '#25D366' }]}>
+                <Feather name="check" size={10} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.stepBadgeText, { color: isDark ? '#25D366' : '#16A34A' }]}>
+                2. {shift.vehiclePlate}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={[styles.stepArrowLine, { backgroundColor: theme.borderSubtle }]} />
+
+            {/* Step 3: Run Active */}
+            <View
+              style={[
+                styles.stepBadge,
+                {
+                  backgroundColor: activeRide ? (isDark ? 'rgba(37,211,102,0.12)' : 'rgba(22,163,74,0.08)') : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+                  borderColor: activeRide ? '#25D366' : theme.borderSubtle,
+                },
+              ]}
+            >
+              <View style={[styles.stepNumCircle, { backgroundColor: activeRide ? '#25D366' : theme.textMuted }]}>
+                <Text style={styles.stepNumText}>3</Text>
+              </View>
+              <Text style={[styles.stepBadgeText, { color: activeRide ? (isDark ? '#25D366' : '#16A34A') : theme.textMuted }]}>
+                {activeRide ? '3. Run Live' : '3. Standby'}
+              </Text>
+            </View>
+          </View>
+        </View>
 
         {/* ═══════════════════════════════════════════
             SECTION 1: Chauffeur Duty Status
@@ -377,6 +470,87 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 40,
+  },
+
+  /* ═══ Stepper Workflow Bar ═══ */
+  stepperContainer: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 12,
+    gap: 10,
+  },
+  stepperHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  stepperHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stepperIconCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  resetShiftBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  resetShiftText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#25D366',
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  stepBadge: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: 'center',
+  },
+  stepNumCircle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  stepBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  stepArrowLine: {
+    width: 8,
+    height: 1,
+    marginHorizontal: 3,
   },
 
   /* ═══ Section 1: Duty Status ═══ */

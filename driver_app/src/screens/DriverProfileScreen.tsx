@@ -39,6 +39,25 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
     })
   }
 
+  const handleLogout = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+    Alert.alert(
+      'Sign Out of Terminal',
+      'Are you sure you want to end your shift and disconnect this chauffeur terminal? Your session will return to the authentication screen.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            await logout()
+          },
+        },
+      ]
+    )
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
@@ -227,7 +246,7 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
           <Button
             title="Sign Out of Terminal"
             variant="outline"
-            onPress={logout}
+            onPress={handleLogout}
             icon={<Feather name="log-out" size={16} color={theme.primary} />}
           />
         </View>

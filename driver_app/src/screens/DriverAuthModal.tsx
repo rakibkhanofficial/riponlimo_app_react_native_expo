@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
+import { Alert } from 'react-native'
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeContext'
@@ -23,7 +24,7 @@ interface DriverAuthModalProps {
 
 export const DriverAuthModal: React.FC<DriverAuthModalProps> = ({ visible, onClose }) => {
   const { theme, isDark } = useTheme()
-  const { login } = useDriverAuth()
+  const { login, loginDemo, logout, driver } = useDriverAuth()
 
   const [email, setEmail] = useState('driver1@riponlimo.com')
   const [password, setPassword] = useState('password123')
@@ -56,13 +57,33 @@ export const DriverAuthModal: React.FC<DriverAuthModalProps> = ({ visible, onClo
     setErrorMessage(null)
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      await login('driver1@riponlimo.com', 'password123')
+      await loginDemo()
       onClose()
     } catch (e: any) {
       setErrorMessage(e.message || 'Demo sign in failed.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleModalLogout = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+    Alert.alert(
+      'Sign Out of Terminal',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            await logout()
+            onClose()
+          },
+        },
+      ]
+    )
   }
 
   return (
@@ -196,6 +217,17 @@ export const DriverAuthModal: React.FC<DriverAuthModalProps> = ({ visible, onClo
                 </View>
                 <Feather name="arrow-right" size={16} color="#25D366" />
               </TouchableOpacity>
+
+              {driver && (
+                <TouchableOpacity
+                  onPress={handleModalLogout}
+                  style={[styles.modalLogoutBtn, { borderColor: isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.25)', backgroundColor: isDark ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.05)' }]}
+                  activeOpacity={0.8}
+                >
+                  <Feather name="log-out" size={15} color="#EF4444" />
+                  <Text style={styles.modalLogoutText}>Sign Out of Current Terminal</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         </View>
@@ -319,5 +351,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
+  },
+  modalLogoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 6,
+  },
+  modalLogoutText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#EF4444',
   },
 })

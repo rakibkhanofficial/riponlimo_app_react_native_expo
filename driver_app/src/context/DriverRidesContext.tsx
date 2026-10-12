@@ -25,6 +25,8 @@ interface DriverRidesContextType {
   refreshRides: () => Promise<void>
   acceptRide: (id: string) => Promise<void>
   advanceActiveTrip: () => Promise<void>
+  advanceToNextTrip: () => void
+  resetDemoShift: () => void
   cancelTrip: (id: string) => Promise<void>
   openNavigation: (address: string) => void
   callPassenger: (phone?: string | null) => void
@@ -43,7 +45,7 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     vehicleId: 'cmtsaqvvw000a13is7v3ul06p',
     vehicleName: 'Cadillac Escalade ESV VIP',
     vehiclePlate: 'SUV-001',
-    completedTripsToday: 3,
+    completedTripsToday: 2,
     totalEarningsToday: 485,
     hoursOnlineToday: 5.5,
   })
@@ -77,6 +79,7 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setAssignedRides([])
       setAvailableRides([])
       setActiveRide(null)
+      setCurrentTripStep('ASSIGNED')
     }
   }, [driver])
 
@@ -101,6 +104,8 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setActiveRide(ongoing)
         if (ongoing.status === 'IN_PROGRESS') {
           setCurrentTripStep('EN_ROUTE')
+        } else {
+          setCurrentTripStep('ASSIGNED')
         }
       }
     } catch (e) {
@@ -152,19 +157,19 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!activeRide || !driver?.id) return
 
     if (currentTripStep === 'ASSIGNED') {
-      // Step 1: Start journey to pickup
+      // Step 1 -> Step 2: Start journey to pickup
       setCurrentTripStep('EN_ROUTE')
       await driverApi.updateBookingStatus(activeRide.id, driver.id, 'IN_PROGRESS')
       setActiveRide(prev => prev ? { ...prev, status: 'IN_PROGRESS' } : null)
       setAssignedRides(prev => prev.map(r => r.id === activeRide.id ? { ...r, status: 'IN_PROGRESS' } : r))
     } else if (currentTripStep === 'EN_ROUTE') {
-      // Step 2: Arrived at pickup
+      // Step 2 -> Step 3: Arrived at pickup
       setCurrentTripStep('ARRIVED')
     } else if (currentTripStep === 'ARRIVED') {
-      // Step 3: Passenger boarded, transit to destination
+      // Step 3 -> Step 4: Passenger boarded, transit to destination
       setCurrentTripStep('IN_TRANSIT')
     } else if (currentTripStep === 'IN_TRANSIT') {
-      // Step 4: Dropoff complete
+      // Step 4 -> Step 5: Dropoff complete
       setCurrentTripStep('COMPLETED')
       await driverApi.updateBookingStatus(activeRide.id, driver.id, 'COMPLETED')
       setActiveRide(prev => prev ? { ...prev, status: 'COMPLETED' } : null)
@@ -176,9 +181,37 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         completedTripsToday: prev.completedTripsToday + 1,
         totalEarningsToday: prev.totalEarningsToday + activeRide.totalAmount,
       }))
-
-      Alert.alert('Trip Completed', `Fare recorded: $${activeRide.totalAmount}. Client invoice dispatched.`)
     }
+  }
+
+  const advanceToNextTrip = () => {
+    const nextRides = assignedRides.filter(
+      r => r.status !== 'COMPLETED' && r.status !== 'CANCELLED' && r.id !== activeRide?.id
+    )
+    if (nextRides.length > 0) {
+      setActiveRide(nextRides[0])
+      setCurrentTripStep('ASSIGNED')
+    } else {
+      setActiveRide(null)
+      setCurrentTripStep('ASSIGNED')
+    }
+  }
+
+  const resetDemoShift = () => {
+    setShift({
+      isOnline: true,
+      vehicleId: 'cmtsaqvvw000a13is7v3ul06p',
+      vehicleName: 'Cadillac Escalade ESV VIP',
+      vehiclePlate: 'SUV-001',
+      completedTripsToday: 2,
+      totalEarningsToday: 485,
+      hoursOnlineToday: 5.5,
+    })
+    const freshAssigned = FALLBACK_ASSIGNED_BOOKINGS.map(b => ({ ...b, status: 'CONFIRMED' as const }))
+    setAssignedRides(freshAssigned)
+    setAvailableRides([...FALLBACK_AVAILABLE_BOOKINGS])
+    setActiveRide(freshAssigned[0])
+    setCurrentTripStep('ASSIGNED')
   }
 
   const cancelTrip = async (id: string) => {
@@ -186,8 +219,7 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
     await driverApi.updateBookingStatus(id, driver.id, 'CANCELLED')
     setAssignedRides(prev => prev.map(r => r.id === id ? { ...r, status: 'CANCELLED' } : r))
     if (activeRide?.id === id) {
-      setActiveRide(null)
-      setCurrentTripStep('ASSIGNED')
+      advanceToNextTrip()
     }
   }
 
@@ -234,6 +266,8 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
         refreshRides,
         acceptRide,
         advanceActiveTrip,
+        advanceToNextTrip,
+        resetDemoShift,
         cancelTrip,
         openNavigation,
         callPassenger,
@@ -246,7 +280,9 @@ export const DriverRidesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 }
 
 export const useDriverRides = () => {
-  const ctx = useContext(DriverRidesContext)
-  if (!ctx) throw new Error('useDriverRides must be used within DriverRidesProvider')
-  return ctx
+  const context = useContext(DriverRidesContext)
+  if (!context) {
+    throw new Error('useDriverRides must be used within a DriverRidesProvider')
+  }
+  return context
 }

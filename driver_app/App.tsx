@@ -35,19 +35,19 @@ const MainDriverApp: React.FC = () => {
       <View style={styles.content}>
         {activeTab === 'dashboard' && (
           <DriverDashboardScreen
-            onProfilePress={() => setShowAuthModal(true)}
+            onProfilePress={() => setActiveTab('profile')}
             onNavigateToSchedule={() => setActiveTab('schedule')}
           />
         )}
         {activeTab === 'schedule' && (
           <RidesScheduleScreen
-            onProfilePress={() => setShowAuthModal(true)}
+            onProfilePress={() => setActiveTab('profile')}
             onSelectActiveRide={() => setActiveTab('dashboard')}
           />
         )}
         {activeTab === 'marketplace' && (
           <DispatchMarketplaceScreen
-            onProfilePress={() => setShowAuthModal(true)}
+            onProfilePress={() => setActiveTab('profile')}
           />
         )}
         {activeTab === 'profile' && (

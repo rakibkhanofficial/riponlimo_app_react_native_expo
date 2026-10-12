@@ -23,16 +23,20 @@ interface DriverLoginScreenProps {
 
 export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuccess }) => {
   const { theme, isDark } = useTheme()
-  const { login } = useDriverAuth()
+  const { login, loginDemo } = useDriverAuth()
 
-  const [email, setEmail] = useState('driver1@riponlimo.com')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      setErrorMessage('Please enter both chauffeur email and security password.')
+    if (!email.trim()) {
+      setErrorMessage('Please enter your chauffeur email or ID.')
+      return
+    }
+    if (!password.trim()) {
+      setErrorMessage('Please enter your security password.')
       return
     }
 
@@ -44,7 +48,7 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       if (onLoginSuccess) onLoginSuccess()
     } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid chauffeur credentials. Please verify or use Quick Demo.')
+      setErrorMessage(err.message || 'Invalid chauffeur credentials. Please try again or tap Instant Demo.')
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
     } finally {
       setLoading(false)
@@ -56,13 +60,20 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
     setErrorMessage(null)
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      await login('driver1@riponlimo.com', 'password123')
+      await loginDemo()
       if (onLoginSuccess) onLoginSuccess()
     } catch (e: any) {
       setErrorMessage(e.message || 'Demo sign in failed.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleFillDemoCredentials = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    setEmail('driver1@riponlimo.com')
+    setPassword('password123')
+    setErrorMessage(null)
   }
 
   return (
@@ -147,7 +158,7 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
                   Chauffeur Authentication
                 </Text>
                 <Text style={[styles.formSubtitle, { color: theme.textMuted }]}>
-                  Authorized access to live runs & manifest
+                  Sign in to access assigned runs & manifest
                 </Text>
               </View>
             </View>
@@ -182,7 +193,7 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
                 }}
                 isPassword
                 leftIcon={<Feather name="lock" size={15} color={theme.primary} />}
-                placeholder="••••••••••••"
+                placeholder="Enter chauffeur password"
               />
 
               <View style={{ marginTop: 6 }}>
@@ -195,36 +206,53 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
                 />
               </View>
 
-              {/* ─── Fast Demo Sign In Card ─── */}
-              <TouchableOpacity
-                onPress={handleQuickDemo}
-                style={[
-                  styles.demoCard,
-                  {
-                    backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.06)',
-                    borderColor: isDark ? 'rgba(37, 211, 102, 0.25)' : 'rgba(22, 163, 74, 0.2)',
-                  },
-                ]}
-                activeOpacity={0.8}
-              >
-                <View
+              {/* ─── Fast Demo Sign In Section ─── */}
+              <View style={[styles.demoSection, { borderTopColor: theme.borderSubtle }]}>
+                <Text style={[styles.demoSectionLabel, { color: theme.textMuted }]}>
+                  TEST & DEMO ACCESS
+                </Text>
+
+                <TouchableOpacity
+                  onPress={handleQuickDemo}
                   style={[
-                    styles.demoIconCircle,
-                    { backgroundColor: isDark ? 'rgba(37, 211, 102, 0.18)' : 'rgba(22, 163, 74, 0.12)' },
+                    styles.demoCard,
+                    {
+                      backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.06)',
+                      borderColor: isDark ? 'rgba(37, 211, 102, 0.25)' : 'rgba(22, 163, 74, 0.2)',
+                    },
                   ]}
+                  activeOpacity={0.8}
                 >
-                  <Ionicons name="flash" size={16} color="#25D366" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.demoTitle, { color: theme.textPrimary }]}>
-                    Instant Demo Chauffeur
+                  <View
+                    style={[
+                      styles.demoIconCircle,
+                      { backgroundColor: isDark ? 'rgba(37, 211, 102, 0.18)' : 'rgba(22, 163, 74, 0.12)' },
+                    ]}
+                  >
+                    <Ionicons name="flash" size={16} color="#25D366" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.demoTitle, { color: theme.textPrimary }]}>
+                      Instant Demo Chauffeur
+                    </Text>
+                    <Text style={[styles.demoSub, { color: isDark ? '#25D366' : '#16A34A' }]}>
+                      John Rivera • Senior Chauffeur
+                    </Text>
+                  </View>
+                  <Feather name="arrow-right" size={16} color="#25D366" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleFillDemoCredentials}
+                  style={[styles.fillDemoBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderColor: theme.borderSubtle }]}
+                  activeOpacity={0.7}
+                >
+                  <Feather name="edit-3" size={12} color={theme.textSecondary} />
+                  <Text style={[styles.fillDemoText, { color: theme.textSecondary }]}>
+                    Auto-fill demo credentials into form
                   </Text>
-                  <Text style={[styles.demoSub, { color: isDark ? '#25D366' : '#16A34A' }]}>
-                    John Rivera • TLC #884920
-                  </Text>
-                </View>
-                <Feather name="arrow-right" size={16} color="#25D366" />
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -375,7 +403,19 @@ const styles = StyleSheet.create({
     gap: 14,
   },
 
-  /* Demo Card */
+  /* Demo Section */
+  demoSection: {
+    borderTopWidth: 1,
+    paddingTop: 14,
+    marginTop: 4,
+    gap: 8,
+  },
+  demoSectionLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
   demoCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -383,7 +423,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 14,
     borderWidth: 1,
-    marginTop: 6,
   },
   demoIconCircle: {
     width: 36,
@@ -400,6 +439,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
+  },
+  fillDemoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  fillDemoText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   /* Footer */
