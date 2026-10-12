@@ -41,28 +41,44 @@ export const DispatchMarketplaceScreen: React.FC<DispatchMarketplaceScreenProps>
           />
         }
       >
-        <View style={styles.bannerBox}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.bannerTitle, { color: theme.textPrimary }]}>
-              Unassigned Luxury Runs
-            </Text>
-            <Text style={[styles.bannerSubtitle, { color: theme.textMuted }]}>
-              Rides reserved by clients that are ready to be claimed into your manifest. First-come priority.
-            </Text>
+        {/* ─── Hero Banner ─── */}
+        <View
+          style={[
+            styles.heroBanner,
+            {
+              backgroundColor: isDark ? 'rgba(37, 211, 102, 0.06)' : 'rgba(22, 163, 74, 0.05)',
+              borderColor: isDark ? 'rgba(37, 211, 102, 0.15)' : 'rgba(22, 163, 74, 0.12)',
+            },
+          ]}
+        >
+          <View style={styles.heroTop}>
+            <View style={[styles.heroIconCircle, { backgroundColor: isDark ? 'rgba(37,211,102,0.15)' : 'rgba(22,163,74,0.1)' }]}>
+              <Feather name="radio" size={18} color="#25D366" />
+            </View>
+            <Badge label={`${availableRides.length} Open`} variant="primary" size="md" />
           </View>
-          <Badge label={`${availableRides.length} Open`} variant="primary" size="md" />
+
+          <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>
+            Unassigned Luxury Runs
+          </Text>
+          <Text style={[styles.heroSub, { color: theme.textMuted }]}>
+            First-come priority • Claim rides into your manifest
+          </Text>
         </View>
 
+        {/* ─── Rides List ─── */}
         {availableRides.length > 0 ? (
           availableRides.map(ride => (
             <AvailableRideCard key={ride.id} booking={ride} />
           ))
         ) : (
-          <View style={styles.emptyBox}>
-            <Feather name="check-circle" size={36} color={theme.primary} />
+          <View style={[styles.emptyCard, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+            <View style={[styles.emptyIcon, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]}>
+              <Feather name="check-circle" size={28} color="#25D366" />
+            </View>
             <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>All Rides Covered</Text>
             <Text style={[styles.emptySub, { color: theme.textMuted }]}>
-              There are no unassigned rides at this time. Central dispatch will notify you when new VIP bookings arrive.
+              No unassigned rides at this time. Dispatch will notify you when new VIP bookings arrive.
             </Text>
           </View>
         )}
@@ -80,36 +96,63 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 40,
   },
-  bannerBox: {
+
+  /* Hero */
+  heroBanner: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+  },
+  heroTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 10,
-    gap: 12,
+    marginBottom: 10,
   },
-  bannerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  bannerSubtitle: {
-    fontSize: 11,
-    marginTop: 2,
-    lineHeight: 16,
-  },
-  emptyBox: {
+  heroIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
-    paddingVertical: 60,
-    gap: 8,
+    justifyContent: 'center',
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+    marginBottom: 4,
+  },
+  heroSub: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+
+  /* Empty */
+  emptyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 30,
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+  },
+  emptyIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    marginTop: 8,
+    fontWeight: '800',
   },
   emptySub: {
     fontSize: 12,
     textAlign: 'center',
-    paddingHorizontal: 20,
     lineHeight: 18,
+    paddingHorizontal: 10,
   },
 })

@@ -43,62 +43,87 @@ export const ScheduledRideCard: React.FC<ScheduledRideCardProps> = ({
         },
       ]}
     >
-      <View style={[styles.header, { borderBottomColor: theme.borderSubtle }]}>
-        <View style={styles.headerLeft}>
-          <Text style={[styles.code, { color: theme.primary }]}>#{reservationCode}</Text>
-          <Text style={[styles.time, { color: theme.textPrimary }]}>
-            {formattedDate} • {formattedTime}
-          </Text>
+      {/* ─── Top: Time + Code + Badge ─── */}
+      <View style={styles.topSection}>
+        <View style={styles.timeCol}>
+          <View style={[styles.timeIconCircle, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]}>
+            <Feather name="clock" size={16} color={theme.primary} />
+          </View>
+          <View>
+            <Text style={[styles.timeText, { color: theme.textPrimary }]}>{formattedTime}</Text>
+            <Text style={[styles.dateText, { color: theme.textMuted }]}>{formattedDate}</Text>
+          </View>
         </View>
-        <Badge
-          label={booking.tripType.replace(/_/g, ' ')}
-          variant="primary"
-          size="sm"
-        />
+
+        <View style={styles.topRight}>
+          <Text style={[styles.code, { color: theme.primary }]}>#{reservationCode}</Text>
+          <Badge
+            label={booking.tripType.replace(/_/g, ' ')}
+            variant="primary"
+            size="sm"
+          />
+        </View>
       </View>
 
-      <View style={styles.body}>
-        {/* Passenger brief */}
-        <View style={styles.passengerRow}>
-          <Feather name="user" size={14} color={theme.textMuted} />
-          <Text style={[styles.passengerName, { color: theme.textSecondary }]}>
-            {booking.user?.name || 'VIP Client'}
+      {/* ─── Passenger + Fare ─── */}
+      <View style={[styles.passengerSection, { borderTopColor: theme.borderSubtle }]}>
+        <View style={styles.passengerLeft}>
+          <View style={[styles.passengerAvatar, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]}>
+            <Feather name="user" size={14} color={theme.textPrimary} />
+          </View>
+          <View style={styles.passengerInfo}>
+            <Text style={[styles.passengerName, { color: theme.textPrimary }]}>
+              {booking.user?.name || 'VIP Client'}
+            </Text>
+            {booking.user?.phone && (
+              <TouchableOpacity onPress={() => callPassenger(booking.user?.phone)} style={styles.callRow}>
+                <Feather name="phone" size={10} color={theme.primary} />
+                <Text style={[styles.callText, { color: theme.primary }]}>Call</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        <Text style={[styles.fare, { color: theme.textPrimary }]}>${booking.totalAmount}</Text>
+      </View>
+
+      {/* ─── Route with Visual Connector ─── */}
+      <View style={[styles.routeSection, { borderTopColor: theme.borderSubtle }]}>
+        <View style={styles.routeRow}>
+          <View style={styles.routeIconCol}>
+            <View style={[styles.routeDot, { backgroundColor: '#25D366' }]}>
+              <Feather name="circle" size={7} color="#FFFFFF" />
+            </View>
+            {booking.dropLocation && (
+              <View style={[styles.routeLine, { borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]} />
+            )}
+          </View>
+          <Text style={[styles.routeAddress, { color: theme.textSecondary }]} numberOfLines={1}>
+            {booking.pickupLocation}
           </Text>
-          {booking.user?.phone && (
-            <TouchableOpacity onPress={() => callPassenger(booking.user?.phone)} style={styles.callIconBtn}>
-              <Feather name="phone-call" size={13} color={theme.primary} />
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.fare, { color: theme.primary }]}>${booking.totalAmount}</Text>
         </View>
 
-        {/* Route Details */}
-        <View style={styles.routeBox}>
-          <View style={styles.routeItem}>
-            <Feather name="circle" size={11} color={theme.primary} />
-            <Text style={[styles.routeText, { color: theme.textSecondary }]} numberOfLines={1}>
-              {booking.pickupLocation}
+        {booking.dropLocation && (
+          <View style={[styles.routeRow, { marginTop: 2 }]}>
+            <View style={styles.routeIconCol}>
+              <View style={[styles.routeDot, { backgroundColor: theme.error }]}>
+                <Feather name="map-pin" size={7} color="#FFFFFF" />
+              </View>
+            </View>
+            <Text style={[styles.routeAddress, { color: theme.textSecondary }]} numberOfLines={1}>
+              {booking.dropLocation}
             </Text>
           </View>
-          {booking.dropLocation && (
-            <View style={styles.routeItem}>
-              <Feather name="map-pin" size={11} color={theme.error} />
-              <Text style={[styles.routeText, { color: theme.textSecondary }]} numberOfLines={1}>
-                {booking.dropLocation}
-              </Text>
-            </View>
-          )}
-        </View>
+        )}
       </View>
 
-      {/* Action footer */}
+      {/* ─── Actions Footer ─── */}
       <View style={[styles.footer, { borderTopColor: theme.borderSubtle }]}>
         <TouchableOpacity
           onPress={() => openNavigation(booking.pickupLocation)}
-          style={[styles.mapBtn, { backgroundColor: theme.surfaceSubtle }]}
+          style={[styles.mapBtn, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: theme.borderSubtle }]}
         >
-          <Feather name="map" size={13} color={theme.textPrimary} />
-          <Text style={[styles.mapBtnText, { color: theme.textPrimary }]}>Preview Map</Text>
+          <Feather name="map" size={14} color={theme.primary} />
+          <Text style={[styles.mapBtnText, { color: theme.textPrimary }]}>Preview</Text>
         </TouchableOpacity>
 
         {onStartRide && (
@@ -110,9 +135,9 @@ export const ScheduledRideCard: React.FC<ScheduledRideCardProps> = ({
             style={[styles.startBtn, { backgroundColor: theme.primary }]}
           >
             <Text style={[styles.startBtnText, { color: theme.isDark ? '#000000' : '#FFFFFF' }]}>
-              Set As Active Run
+              Set Active
             </Text>
-            <Feather name="arrow-right" size={13} color={theme.isDark ? '#000000' : '#FFFFFF'} />
+            <Feather name="arrow-right" size={14} color={theme.isDark ? '#000000' : '#FFFFFF'} />
           </TouchableOpacity>
         )}
       </View>
@@ -122,72 +147,139 @@ export const ScheduledRideCard: React.FC<ScheduledRideCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 14,
-    borderWidth: 1.2,
+    borderRadius: 16,
+    borderWidth: 1,
     marginVertical: 6,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 2,
   },
-  header: {
+  topSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  timeCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  timeIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeText: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  dateText: {
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  topRight: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  code: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+
+  /* Passenger */
+  passengerSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderBottomWidth: 1,
+    borderTopWidth: 1,
   },
-  headerLeft: {
+  passengerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  code: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  time: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  body: {
-    padding: 14,
     gap: 10,
+    flex: 1,
   },
-  passengerRow: {
-    flexDirection: 'row',
+  passengerAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
+  },
+  passengerInfo: {
+    flex: 1,
   },
   passengerName: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    flex: 1,
   },
-  callIconBtn: {
-    padding: 4,
-  },
-  fare: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  routeBox: {
-    gap: 6,
-  },
-  routeItem: {
+  callRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
+    marginTop: 2,
   },
-  routeText: {
+  callText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  fare: {
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+
+  /* Route */
+  routeSection: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    gap: 2,
+  },
+  routeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  routeIconCol: {
+    alignItems: 'center',
+    width: 18,
+  },
+  routeDot: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  routeLine: {
+    width: 0,
+    height: 16,
+    borderLeftWidth: 1.5,
+    borderStyle: 'dashed',
+    marginVertical: 2,
+  },
+  routeAddress: {
     fontSize: 12,
+    fontWeight: '600',
     flex: 1,
   },
+
+  /* Footer */
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderTopWidth: 1,
@@ -197,21 +289,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   mapBtnText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   startBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   startBtnText: {
     fontSize: 11,

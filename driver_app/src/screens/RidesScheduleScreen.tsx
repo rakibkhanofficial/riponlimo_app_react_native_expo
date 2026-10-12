@@ -45,64 +45,92 @@ export const RidesScheduleScreen: React.FC<RidesScheduleScreenProps> = ({
     return true
   })
 
+  const upcomingCount = assignedRides.filter(r => r.status !== 'COMPLETED').length
+  const completedCount = assignedRides.filter(r => r.status === 'COMPLETED').length
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <Header title="RIDE MANIFEST" subtitle="DAILY CHAUFFEUR SCHEDULE" onProfilePress={onProfilePress} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Search */}
+        {/* ─── Search ─── */}
         <Input
-          placeholder="Filter schedule by Passenger or Location"
+          placeholder="Filter by passenger or location"
           value={search}
           onChangeText={setSearch}
           leftIcon={<Feather name="search" size={15} color={theme.primary} />}
         />
 
-        {/* Tab switcher */}
-        <View style={[styles.tabBar, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
-          <TouchableOpacity
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-              setTab('UPCOMING')
-            }}
-            style={[
-              styles.tabBtn,
-              tab === 'UPCOMING' && [styles.activeTab, { backgroundColor: theme.surface, borderColor: theme.border }],
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                { color: tab === 'UPCOMING' ? theme.textPrimary : theme.textMuted, fontWeight: tab === 'UPCOMING' ? '700' : '500' },
-              ]}
-            >
-              Upcoming Manifest
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-              setTab('COMPLETED')
-            }}
-            style={[
-              styles.tabBtn,
-              tab === 'COMPLETED' && [styles.activeTab, { backgroundColor: theme.surface, borderColor: theme.border }],
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                { color: tab === 'COMPLETED' ? theme.textPrimary : theme.textMuted, fontWeight: tab === 'COMPLETED' ? '700' : '500' },
-              ]}
-            >
-              Completed Runs
-            </Text>
-          </TouchableOpacity>
+        {/* ─── Tab Switcher ─── */}
+        <View style={[styles.tabBar, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+          {[
+            { id: 'UPCOMING' as const, label: 'Upcoming', icon: 'calendar', count: upcomingCount },
+            { id: 'COMPLETED' as const, label: 'Completed', icon: 'check-circle', count: completedCount },
+          ].map(item => {
+            const isActive = tab === item.id
+            return (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                  setTab(item.id)
+                }}
+                style={[
+                  styles.tabBtn,
+                  isActive && {
+                    backgroundColor: theme.card,
+                    borderColor: theme.cardBorder,
+                    borderWidth: 1,
+                    shadowColor: isDark ? '#000' : '#64748B',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.06,
+                    shadowRadius: 4,
+                    elevation: 1,
+                  },
+                ]}
+              >
+                <Feather
+                  name={item.icon as any}
+                  size={14}
+                  color={isActive ? theme.primary : theme.textMuted}
+                />
+                <Text
+                  style={[
+                    styles.tabText,
+                    {
+                      color: isActive ? theme.textPrimary : theme.textMuted,
+                      fontWeight: isActive ? '800' : '500',
+                    },
+                  ]}
+                >
+                  {item.label}
+                </Text>
+                <View
+                  style={[
+                    styles.tabCount,
+                    {
+                      backgroundColor: isActive
+                        ? (isDark ? 'rgba(37,211,102,0.15)' : 'rgba(22,163,74,0.1)')
+                        : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tabCountText,
+                      { color: isActive ? '#25D366' : theme.textMuted },
+                    ]}
+                  >
+                    {item.count}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )
+          })}
         </View>
 
-        {/* Rides List */}
+        {/* ─── Results ─── */}
         {filtered.length > 0 ? (
           filtered.map(ride => (
             <ScheduledRideCard
@@ -112,8 +140,10 @@ export const RidesScheduleScreen: React.FC<RidesScheduleScreenProps> = ({
             />
           ))
         ) : (
-          <View style={styles.emptyBox}>
-            <Feather name="calendar" size={32} color={theme.primary} />
+          <View style={[styles.emptyCard, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+            <View style={[styles.emptyIcon, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]}>
+              <Feather name="calendar" size={28} color={theme.primary} />
+            </View>
             <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>No Rides in this View</Text>
             <Text style={[styles.emptySub, { color: theme.textMuted }]}>
               {tab === 'UPCOMING' ? 'You have cleared all upcoming assignments.' : 'No completed rides recorded yet.'}
@@ -134,36 +164,62 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 40,
   },
+
+  /* Tab */
   tabBar: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 4,
     marginVertical: 10,
+    gap: 4,
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: 9,
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  activeTab: {
-    borderWidth: 1,
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
   tabText: {
     fontSize: 12,
   },
-  emptyBox: {
+  tabCount: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  tabCountText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+
+  /* Empty */
+  emptyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 30,
     alignItems: 'center',
-    paddingVertical: 40,
-    gap: 8,
+    gap: 10,
+    marginTop: 10,
+  },
+  emptyIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    marginTop: 6,
+    fontWeight: '800',
   },
   emptySub: {
     fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 })
