@@ -20,6 +20,24 @@ interface ActiveTripCardProps {
   booking: Booking
 }
 
+const STEPS: TripStep[] = ['ASSIGNED', 'EN_ROUTE', 'ARRIVED', 'IN_TRANSIT', 'COMPLETED']
+
+const STEP_LABELS: Record<TripStep, string> = {
+  ASSIGNED: 'Dispatch',
+  EN_ROUTE: 'En Route',
+  ARRIVED: 'Arrived',
+  IN_TRANSIT: 'In Transit',
+  COMPLETED: 'Done',
+}
+
+const STEP_ICONS: Record<TripStep, string> = {
+  ASSIGNED: 'send',
+  EN_ROUTE: 'navigation',
+  ARRIVED: 'map-pin',
+  IN_TRANSIT: 'truck',
+  COMPLETED: 'check-circle',
+}
+
 export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
   const { theme } = useTheme()
   const {
@@ -31,17 +49,18 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
   } = useDriverRides()
 
   const reservationCode = booking.id ? booking.id.slice(-6).toUpperCase() : 'ACTIVE'
+  const currentStepIndex = STEPS.indexOf(currentTripStep)
 
   const getStepTitle = (step: TripStep) => {
     switch (step) {
       case 'ASSIGNED':
-        return 'Dispatched • Ready to Roll'
+        return 'Dispatched — Ready to Roll'
       case 'EN_ROUTE':
-        return 'En Route to Pickup Location'
+        return 'En Route to Pickup'
       case 'ARRIVED':
-        return 'Arrived at Curbside / Terminal'
+        return 'Arrived at Pickup'
       case 'IN_TRANSIT':
-        return 'Passenger Boarded • In Transit'
+        return 'Passenger In Transit'
       case 'COMPLETED':
         return 'Trip Completed'
     }
@@ -74,14 +93,15 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
 
   return (
     <Card style={styles.card}>
-      {/* Top Banner with reservation code and status */}
-      <View style={styles.topRow}>
-        <View style={styles.codeRow}>
-          <View style={[styles.activePill, { backgroundColor: theme.driverActiveBg, borderColor: theme.driverActive }]}>
-            <View style={[styles.pulseDot, { backgroundColor: theme.driverActive }]} />
-            <Text style={[styles.activePillText, { color: theme.driverActive }]}>ACTIVE RUN</Text>
+
+      {/* ─── SECTION 1: Status Header ─── */}
+      <View style={styles.statusHeader}>
+        <View style={styles.statusLeft}>
+          <View style={[styles.liveIndicator, { backgroundColor: 'rgba(37, 211, 102, 0.15)' }]}>
+            <View style={[styles.liveDot, { backgroundColor: '#25D366' }]} />
+            <Text style={[styles.liveText, { color: '#25D366' }]}>LIVE</Text>
           </View>
-          <Text style={[styles.resCode, { color: theme.textPrimary }]}>#{reservationCode}</Text>
+          <Text style={[styles.resCodeLg, { color: theme.textPrimary }]}>#{reservationCode}</Text>
         </View>
         <Badge
           label={booking.tripType.replace(/_/g, ' ')}
@@ -90,42 +110,85 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
         />
       </View>
 
-      {/* Progress Phase Bar */}
-      <View style={[styles.phaseBox, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
-        <View style={styles.phaseHeader}>
-          <Text style={[styles.phaseLabel, { color: theme.textMuted }]}>Current Chauffeur Phase</Text>
-          <Text style={[styles.phaseTitle, { color: theme.textPrimary }]}>
-            {getStepTitle(currentTripStep)}
-          </Text>
-        </View>
+      {/* Current Phase Title */}
+      <Text style={[styles.phaseHeadline, { color: theme.textPrimary }]}>
+        {getStepTitle(currentTripStep)}
+      </Text>
 
-        <View style={styles.progressTrack}>
-          {['ASSIGNED', 'EN_ROUTE', 'ARRIVED', 'IN_TRANSIT', 'COMPLETED'].map((step, idx) => {
-            const stepsOrder = ['ASSIGNED', 'EN_ROUTE', 'ARRIVED', 'IN_TRANSIT', 'COMPLETED']
-            const currentIndex = stepsOrder.indexOf(currentTripStep)
-            const isDone = currentIndex >= idx
+      {/* ─── SECTION 2: Visual Step Progress ─── */}
+      <View style={[styles.stepsContainer, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+        <View style={styles.stepsRow}>
+          {STEPS.map((step, idx) => {
+            const isDone = currentStepIndex > idx
+            const isCurrent = currentStepIndex === idx
+            const isActive = isDone || isCurrent
+
             return (
-              <View
-                key={step}
-                style={[
-                  styles.progressBarSegment,
-                  {
-                    backgroundColor: isDone ? '#25D366' : 'rgba(255, 255, 255, 0.08)',
-                  },
-                ]}
-              />
+              <View key={step} style={styles.stepItem}>
+                {/* Connector line (before each step except first) */}
+                {idx > 0 && (
+                  <View
+                    style={[
+                      styles.stepConnector,
+                      {
+                        backgroundColor: isDone ? '#25D366' : (theme.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'),
+                      },
+                    ]}
+                  />
+                )}
+
+                {/* Step circle */}
+                <View
+                  style={[
+                    styles.stepCircle,
+                    {
+                      backgroundColor: isCurrent
+                        ? '#25D366'
+                        : isDone
+                          ? 'rgba(37, 211, 102, 0.2)'
+                          : (theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'),
+                      borderColor: isActive ? '#25D366' : 'transparent',
+                    },
+                  ]}
+                >
+                  <Feather
+                    name={STEP_ICONS[step] as any}
+                    size={12}
+                    color={
+                      isCurrent
+                        ? '#FFFFFF'
+                        : isDone
+                          ? '#25D366'
+                          : theme.textMuted
+                    }
+                  />
+                </View>
+
+                {/* Step label */}
+                <Text
+                  style={[
+                    styles.stepLabel,
+                    {
+                      color: isCurrent ? '#25D366' : isDone ? theme.textSecondary : theme.textMuted,
+                      fontWeight: isCurrent ? '800' : '500',
+                    },
+                  ]}
+                >
+                  {STEP_LABELS[step]}
+                </Text>
+              </View>
             )
           })}
         </View>
       </View>
 
-      {/* Passenger & Communication Panel */}
-      <View style={[styles.passengerPanel, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
-        <View style={styles.passengerInfo}>
-          <View style={[styles.passengerAvatar, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}>
-            <Feather name="user" size={18} color={theme.textPrimary} />
+      {/* ─── SECTION 3: Passenger & Comms ─── */}
+      <View style={[styles.passengerCard, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+        <View style={styles.passengerRow}>
+          <View style={[styles.avatar, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}>
+            <Feather name="user" size={20} color={theme.textPrimary} />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={styles.passengerDetails}>
             <Text style={[styles.passengerName, { color: theme.textPrimary }]}>
               {booking.user?.name || 'VIP Client'}
             </Text>
@@ -135,42 +198,60 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
           </View>
         </View>
 
-        <View style={styles.commsButtons}>
+        <View style={styles.commsRow}>
           <TouchableOpacity
             onPress={() => callPassenger(booking.user?.phone)}
-            style={[styles.commBtn, { backgroundColor: theme.card, borderColor: theme.borderSubtle }]}
+            style={[styles.commCircle, { backgroundColor: 'rgba(37, 211, 102, 0.12)', borderColor: 'rgba(37, 211, 102, 0.3)' }]}
           >
-            <Feather name="phone" size={15} color="#25D366" />
-            <Text style={[styles.commBtnText, { color: theme.textPrimary }]}>Call</Text>
+            <Feather name="phone" size={16} color="#25D366" />
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => smsPassenger(booking.user?.phone)}
-            style={[styles.commBtn, { backgroundColor: theme.card, borderColor: theme.borderSubtle }]}
+            style={[styles.commCircle, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderColor: theme.borderSubtle }]}
           >
-            <Feather name="message-square" size={15} color={theme.textPrimary} />
-            <Text style={[styles.commBtnText, { color: theme.textPrimary }]}>SMS</Text>
+            <Feather name="message-square" size={16} color={theme.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => openNavigation(currentDestination)}
+            style={[styles.commCircle, { backgroundColor: theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderColor: theme.borderSubtle }]}
+          >
+            <Feather name="navigation" size={16} color={theme.primary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Route Addresses */}
-      <View style={styles.routeSection}>
-        <View style={styles.routeItem}>
-          <Feather name="circle" size={14} color={theme.primary} style={{ marginTop: 2 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.routeLabel, { color: theme.textMuted }]}>Pickup Address</Text>
+      {/* ─── SECTION 4: Route with Visual Connector ─── */}
+      <View style={[styles.routeCard, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
+        {/* Pickup */}
+        <View style={styles.routeRow}>
+          <View style={styles.routeIconCol}>
+            <View style={[styles.routeDot, { backgroundColor: '#25D366' }]}>
+              <Feather name="circle" size={8} color="#FFFFFF" />
+            </View>
+            {booking.dropLocation && (
+              <View style={[styles.routeDottedLine, { borderColor: theme.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' }]} />
+            )}
+          </View>
+          <View style={styles.routeTextCol}>
+            <Text style={[styles.routeLabel, { color: theme.textMuted }]}>PICKUP</Text>
             <Text style={[styles.routeAddress, { color: theme.textPrimary }]}>
               {booking.pickupLocation}
             </Text>
           </View>
         </View>
 
+        {/* Drop-off */}
         {booking.dropLocation && (
-          <View style={[styles.routeItem, { marginTop: 10 }]}>
-            <Feather name="map-pin" size={14} color={theme.error} style={{ marginTop: 2 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.routeLabel, { color: theme.textMuted }]}>Drop-off Destination</Text>
+          <View style={[styles.routeRow, { marginTop: 4 }]}>
+            <View style={styles.routeIconCol}>
+              <View style={[styles.routeDot, { backgroundColor: theme.error }]}>
+                <Feather name="map-pin" size={8} color="#FFFFFF" />
+              </View>
+            </View>
+            <View style={styles.routeTextCol}>
+              <Text style={[styles.routeLabel, { color: theme.textMuted }]}>DROP-OFF</Text>
               <Text style={[styles.routeAddress, { color: theme.textPrimary }]}>
                 {booking.dropLocation}
               </Text>
@@ -226,18 +307,6 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
         )}
       </View>
 
-      {/* Navigation Quick Action */}
-      <TouchableOpacity
-        onPress={() => openNavigation(currentDestination)}
-        style={[styles.navActionBtn, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}
-      >
-        <Feather name="navigation" size={15} color="#25D366" />
-        <Text style={[styles.navActionText, { color: theme.textPrimary }]}>
-          Open GPS Navigation ({currentTripStep === 'IN_TRANSIT' ? 'Drop-off' : 'Pickup'})
-        </Text>
-        <Feather name="external-link" size={14} color={theme.textMuted} />
-      </TouchableOpacity>
-
       {/* Phase Progression Big Action Button */}
       {currentTripStep !== 'COMPLETED' && (
         <View style={styles.mainActionContainer}>
@@ -264,137 +333,182 @@ const styles = StyleSheet.create({
   card: {
     marginVertical: 10,
   },
-  topRow: {
+
+  /* ─── Section 1: Status Header ─── */
+  statusHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
-  codeRow: {
+  statusLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
-  activePill: {
+  liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  liveDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
-  activePillText: {
-    fontSize: 9,
+  liveText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+  },
+  resCodeLg: {
+    fontSize: 13,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
-  resCode: {
-    fontSize: 14,
+  phaseHeadline: {
+    fontSize: 18,
     fontWeight: '800',
-    letterSpacing: 1,
-  },
-  phaseBox: {
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
     marginBottom: 14,
+    letterSpacing: -0.2,
   },
-  phaseHeader: {
-    marginBottom: 8,
+
+  /* ─── Section 2: Visual Steps ─── */
+  stepsContainer: {
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
   },
-  phaseLabel: {
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    fontWeight: '600',
-  },
-  phaseTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  progressTrack: {
+  stepsRow: {
     flexDirection: 'row',
-    gap: 4,
-  },
-  progressBarSegment: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-  },
-  passengerPanel: {
-    flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 14,
   },
-  passengerInfo: {
+  stepItem: {
+    alignItems: 'center',
+    flex: 1,
+    position: 'relative',
+  },
+  stepConnector: {
+    position: 'absolute',
+    top: 14,
+    right: '50%',
+    left: '-50%',
+    height: 2,
+    borderRadius: 1,
+  },
+  stepCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    marginBottom: 5,
+    zIndex: 1,
+  },
+  stepLabel: {
+    fontSize: 9,
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+
+  /* ─── Section 3: Passenger Card ─── */
+  passengerCard: {
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
+    gap: 12,
+  },
+  passengerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    flex: 1,
+    gap: 12,
   },
-  passengerAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  passengerDetails: {
+    flex: 1,
+  },
   passengerName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
   },
   passengerPhone: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
-  commsButtons: {
+  commsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
-  commBtn: {
-    flexDirection: 'row',
+  commCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    justifyContent: 'center',
     borderWidth: 1,
   },
-  commBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  routeSection: {
+
+  /* ─── Section 4: Route Card ─── */
+  routeCard: {
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
     marginBottom: 14,
   },
-  routeItem: {
+  routeRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 12,
+  },
+  routeIconCol: {
+    alignItems: 'center',
+    width: 22,
+  },
+  routeDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  routeDottedLine: {
+    width: 0,
+    height: 28,
+    borderLeftWidth: 2,
+    borderStyle: 'dashed',
+    marginVertical: 3,
+  },
+  routeTextCol: {
+    flex: 1,
+    paddingBottom: 2,
   },
   routeLabel: {
     fontSize: 10,
     textTransform: 'uppercase',
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 2,
   },
   routeAddress: {
     fontSize: 13,
     fontWeight: '600',
-    marginTop: 2,
     lineHeight: 18,
   },
+
+  /* ─── Remaining sections (unchanged) ─── */
   flightBox: {
     padding: 12,
     borderRadius: 10,
@@ -430,20 +544,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
     marginBottom: 12,
-  },
-  navActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  navActionText: {
-    fontSize: 12,
-    fontWeight: '700',
   },
   mainActionContainer: {
     marginTop: 4,

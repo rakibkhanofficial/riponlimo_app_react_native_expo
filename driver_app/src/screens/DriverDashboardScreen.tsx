@@ -66,78 +66,164 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
           />
         }
       >
-        {/* Chauffeur Duty Status Bar */}
-        <View style={[styles.dutyBar, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
-          <View style={styles.dutyLeft}>
-            <View
-              style={[
-                styles.dutyDot,
-                { backgroundColor: shift.isOnline ? theme.driverActive : theme.textMuted },
-              ]}
-            />
-            <View>
-              <Text style={[styles.dutyStatusText, { color: theme.textPrimary }]}>
-                {shift.isOnline ? 'CHAUFFEUR ON DUTY' : 'SHIFT PAUSED'}
-              </Text>
-              <Text style={[styles.dutySubText, { color: theme.textMuted }]}>
-                {shift.isOnline ? 'Available for dispatch & VIP assignments' : 'Go online to receive jobs'}
-              </Text>
-            </View>
-          </View>
 
-          <TouchableOpacity
-            onPress={handleToggleDuty}
+        {/* ═══════════════════════════════════════════
+            SECTION 1: Chauffeur Duty Status
+        ═══════════════════════════════════════════ */}
+        <View
+          style={[
+            styles.dutyCard,
+            {
+              backgroundColor: shift.isOnline
+                ? (isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.06)')
+                : theme.surfaceSubtle,
+              borderColor: shift.isOnline
+                ? (isDark ? 'rgba(37, 211, 102, 0.25)' : 'rgba(22, 163, 74, 0.2)')
+                : theme.borderSubtle,
+            },
+          ]}
+        >
+          <View style={styles.dutyTop}>
+            {/* Status indicator */}
+            <View style={styles.dutyStatusRow}>
+              <View
+                style={[
+                  styles.dutyStatusCircle,
+                  {
+                    backgroundColor: shift.isOnline
+                      ? 'rgba(37, 211, 102, 0.2)'
+                      : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'),
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.dutyDotInner,
+                    { backgroundColor: shift.isOnline ? '#25D366' : theme.textMuted },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.dutyInfo}>
+                <Text style={[styles.dutyTitle, { color: theme.textPrimary }]}>
+                  {shift.isOnline ? 'On Duty' : 'Off Duty'}
+                </Text>
+                <Text style={[styles.dutySub, { color: theme.textMuted }]}>
+                  {shift.isOnline ? 'Receiving dispatch & VIP assignments' : 'Go online to receive jobs'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Toggle button */}
+            <TouchableOpacity
+              onPress={handleToggleDuty}
+              activeOpacity={0.8}
+              style={[
+                styles.dutyToggle,
+                {
+                  backgroundColor: shift.isOnline ? '#25D366' : theme.primary,
+                },
+              ]}
+            >
+              <Feather
+                name={shift.isOnline ? 'pause' : 'play'}
+                size={14}
+                color={shift.isOnline ? '#FFFFFF' : (isDark ? '#000000' : '#FFFFFF')}
+              />
+              <Text
+                style={[
+                  styles.dutyToggleLabel,
+                  { color: shift.isOnline ? '#FFFFFF' : (isDark ? '#000000' : '#FFFFFF') },
+                ]}
+              >
+                {shift.isOnline ? 'PAUSE' : 'GO LIVE'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ═══════════════════════════════════════════
+            SECTION 2: Earnings & Shift Stats
+        ═══════════════════════════════════════════ */}
+        <View style={styles.statsGrid}>
+          {/* Earnings Card — Hero card, full width */}
+          <View
             style={[
-              styles.dutyToggleBtn,
+              styles.earningsCard,
               {
-                backgroundColor: shift.isOnline ? 'rgba(37, 211, 102, 0.15)' : theme.surface,
-                borderColor: shift.isOnline ? theme.driverActive : theme.border,
+                backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.06)',
+                borderColor: isDark ? 'rgba(37, 211, 102, 0.2)' : 'rgba(22, 163, 74, 0.15)',
               },
             ]}
           >
-            <Text
-              style={[
-                styles.dutyToggleText,
-                { color: shift.isOnline ? theme.driverActive : theme.textSecondary },
-              ]}
-            >
-              {shift.isOnline ? 'GO OFFLINE' : 'GO ONLINE'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Shift Metrics Bar */}
-        <View style={[styles.metricsBar, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-          <View style={styles.metricItem}>
-            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>TOTAL EARNINGS</Text>
-            <Text style={[styles.metricValue, { color: theme.primary }]}>
+            <View style={styles.earningsTop}>
+              <View
+                style={[
+                  styles.earningsIconCircle,
+                  { backgroundColor: isDark ? 'rgba(37, 211, 102, 0.15)' : 'rgba(22, 163, 74, 0.12)' },
+                ]}
+              >
+                <Feather name="dollar-sign" size={18} color="#25D366" />
+              </View>
+              <Text style={[styles.earningsLabel, { color: theme.textMuted }]}>TODAY'S EARNINGS</Text>
+            </View>
+            <Text style={[styles.earningsAmount, { color: theme.textPrimary }]}>
               ${shift.totalEarningsToday}
             </Text>
-            <Text style={[styles.metricSub, { color: theme.textMuted }]}>Today's Payout</Text>
+            <Text style={[styles.earningsSub, { color: theme.textMuted }]}>
+              Total payout for current shift
+            </Text>
           </View>
 
-          <View style={[styles.metricDivider, { backgroundColor: theme.borderSubtle }]} />
+          {/* Two small stat cards side by side */}
+          <View style={styles.statsSmallRow}>
+            {/* Trips */}
+            <View
+              style={[
+                styles.statSmallCard,
+                { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle },
+              ]}
+            >
+              <View
+                style={[
+                  styles.statIconCircle,
+                  { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' },
+                ]}
+              >
+                <Feather name="check-circle" size={16} color={theme.primary} />
+              </View>
+              <Text style={[styles.statValue, { color: theme.textPrimary }]}>
+                {shift.completedTripsToday}
+              </Text>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>Trips Done</Text>
+            </View>
 
-          <View style={styles.metricItem}>
-            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>TRIPS DONE</Text>
-            <Text style={[styles.metricValue, { color: theme.textPrimary }]}>
-              {shift.completedTripsToday}
-            </Text>
-            <Text style={[styles.metricSub, { color: theme.textMuted }]}>Completed</Text>
-          </View>
-
-          <View style={[styles.metricDivider, { backgroundColor: theme.borderSubtle }]} />
-
-          <View style={styles.metricItem}>
-            <Text style={[styles.metricLabel, { color: theme.textMuted }]}>SHIFT HOURS</Text>
-            <Text style={[styles.metricValue, { color: theme.textPrimary }]}>
-              {shift.hoursOnlineToday}h
-            </Text>
-            <Text style={[styles.metricSub, { color: theme.textMuted }]}>Active Duty</Text>
+            {/* Hours */}
+            <View
+              style={[
+                styles.statSmallCard,
+                { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle },
+              ]}
+            >
+              <View
+                style={[
+                  styles.statIconCircle,
+                  { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' },
+                ]}
+              >
+                <Feather name="clock" size={16} color={theme.primary} />
+              </View>
+              <Text style={[styles.statValue, { color: theme.textPrimary }]}>
+                {shift.hoursOnlineToday}h
+              </Text>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>On Duty</Text>
+            </View>
           </View>
         </View>
 
-        {/* Assigned Vehicle Overview (Interactive Selector) */}
+        {/* ═══════════════════════════════════════════
+            SECTION 3: Assigned Fleet Vehicle
+        ═══════════════════════════════════════════ */}
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => {
@@ -146,37 +232,64 @@ export const DriverDashboardScreen: React.FC<DriverDashboardScreenProps> = ({
           }}
           style={[styles.vehicleCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
         >
-          <View style={styles.vehicleTopRow}>
-            <View style={[styles.vehicleIconBadge, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
-              <MaterialCommunityIcons name="car-limousine" size={26} color={theme.primary} />
+          {/* Vehicle identity row */}
+          <View style={styles.vehicleIdentity}>
+            <View
+              style={[
+                styles.vehicleIconBox,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' },
+              ]}
+            >
+              <MaterialCommunityIcons name="car-limousine" size={28} color={theme.primary} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.vehicleCardHeader, { color: theme.textMuted }]}>ASSIGNED FLEET VEHICLE</Text>
-              <Text style={[styles.vehicleCardTitle, { color: theme.textPrimary }]}>{shift.vehicleName}</Text>
+
+            <View style={styles.vehicleNameCol}>
+              <Text style={[styles.vehicleLabel, { color: theme.textMuted }]}>ACTIVE VEHICLE</Text>
+              <Text style={[styles.vehicleName, { color: theme.textPrimary }]}>{shift.vehicleName}</Text>
             </View>
-            <View style={[styles.switchVehicleBtn, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}>
-              <Text style={[styles.switchVehicleBtnText, { color: theme.primary }]}>SWITCH</Text>
-              <Feather name="refresh-cw" size={12} color={theme.primary} />
+
+            <View style={[styles.switchBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', borderColor: theme.borderSubtle }]}>
+              <Feather name="refresh-cw" size={14} color={theme.primary} />
             </View>
           </View>
 
-          <View style={[styles.vehicleBottomRow, { borderTopColor: theme.borderSubtle }]}>
-            <View style={styles.plateContainer}>
-              <Text style={[styles.plateLabel, { color: theme.textMuted }]}>PLATE</Text>
-              <Text style={[styles.plateNumber, { color: theme.primary }]}>{shift.vehiclePlate}</Text>
+          {/* Plate + Spec Tags */}
+          <View style={[styles.vehicleDetails, { borderTopColor: theme.borderSubtle }]}>
+            {/* Plate badge */}
+            <View
+              style={[
+                styles.plateBadge,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  borderColor: theme.borderSubtle,
+                },
+              ]}
+            >
+              <Text style={[styles.platePrefix, { color: theme.textMuted }]}>PLATE</Text>
+              <Text style={[styles.plateValue, { color: theme.primary }]}>{shift.vehiclePlate}</Text>
             </View>
-            <View style={styles.specTagsRow}>
-              <View style={[styles.specTag, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
-                <Feather name="shield" size={11} color={theme.driverActive} />
-                <Text style={[styles.specTagText, { color: theme.textSecondary }]}>TLC Livery Insured</Text>
+
+            {/* Spec chips */}
+            <View style={styles.specChipsRow}>
+              <View style={[styles.specChip, { backgroundColor: isDark ? 'rgba(37,211,102,0.1)' : 'rgba(22,163,74,0.08)', borderColor: isDark ? 'rgba(37,211,102,0.2)' : 'rgba(22,163,74,0.15)' }]}>
+                <Feather name="shield" size={11} color="#25D366" />
+                <Text style={[styles.specChipText, { color: isDark ? '#25D366' : '#16A34A' }]}>TLC Insured</Text>
               </View>
-              <View style={[styles.specTag, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
-                <Feather name="users" size={11} color={theme.textMuted} />
-                <Text style={[styles.specTagText, { color: theme.textSecondary }]}>VIP Chauffeur Ready</Text>
+              <View style={[styles.specChip, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', borderColor: theme.borderSubtle }]}>
+                <Feather name="award" size={11} color={theme.textSecondary} />
+                <Text style={[styles.specChipText, { color: theme.textSecondary }]}>VIP Ready</Text>
+              </View>
+              <View style={[styles.specChip, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', borderColor: theme.borderSubtle }]}>
+                <Feather name="star" size={11} color={theme.textSecondary} />
+                <Text style={[styles.specChipText, { color: theme.textSecondary }]}>Chauffeur</Text>
               </View>
             </View>
           </View>
         </TouchableOpacity>
+
+        {/* ═══════════════════════════════════════════
+            Remaining sections (unchanged)
+        ═══════════════════════════════════════════ */}
 
         {/* Active Ongoing Trip */}
         {activeRide ? (
@@ -231,123 +344,222 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 40,
   },
-  metricsBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 8,
+
+  /* ═══ Section 1: Duty Status ═══ */
+  dutyCard: {
     borderRadius: 16,
-    borderWidth: 1.2,
+    borderWidth: 1,
+    padding: 14,
     marginBottom: 12,
   },
-  metricItem: {
-    flex: 1,
+  dutyTop: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  metricDivider: {
-    width: 1,
-    height: 38,
-  },
-  metricLabel: {
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    fontWeight: '700',
-  },
-  metricValue: {
-    fontSize: 22,
-    fontWeight: '900',
-    marginTop: 3,
-    letterSpacing: -0.5,
-  },
-  metricSub: {
-    fontSize: 9,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  vehicleCard: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1.2,
-    marginBottom: 14,
+    justifyContent: 'space-between',
     gap: 12,
   },
-  vehicleTopRow: {
+  dutyStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  dutyStatusCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dutyDotInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  dutyInfo: {
+    flex: 1,
+  },
+  dutyTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  dutySub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  dutyToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  dutyToggleLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+
+  /* ═══ Section 2: Earnings & Stats ═══ */
+  statsGrid: {
+    marginBottom: 12,
+    gap: 10,
+  },
+  earningsCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+  },
+  earningsTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  earningsIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  earningsLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  earningsAmount: {
+    fontSize: 32,
+    fontWeight: '900',
+    letterSpacing: -1,
+    marginBottom: 2,
+  },
+  earningsSub: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  statsSmallRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statSmallCard: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    alignItems: 'center',
+    gap: 6,
+  },
+  statIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  /* ═══ Section 3: Fleet Vehicle ═══ */
+  vehicleCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 14,
+    gap: 14,
+  },
+  vehicleIdentity: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  vehicleIconBadge: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
+  vehicleIconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vehicleNameCol: {
+    flex: 1,
+  },
+  vehicleLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  vehicleName: {
+    fontSize: 17,
+    fontWeight: '800',
+    marginTop: 2,
+    letterSpacing: -0.2,
+  },
+  switchBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vehicleCardHeader: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.8,
+  vehicleDetails: {
+    paddingTop: 14,
+    borderTopWidth: 1,
+    gap: 10,
   },
-  vehicleCardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 2,
-    letterSpacing: 0.2,
-  },
-  switchVehicleBtn: {
+  plateBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+    gap: 8,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
   },
-  switchVehicleBtnText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  vehicleBottomRow: {
-    paddingTop: 10,
-    borderTopWidth: 1,
-    gap: 8,
-  },
-  plateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  plateLabel: {
+  platePrefix: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  plateNumber: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.8,
+  plateValue: {
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1.2,
   },
-  specTagsRow: {
+  specChipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
-  specTag: {
+  specChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
     borderWidth: 1,
   },
-  specTagText: {
+  specChipText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
   },
+
+  /* ═══ Remaining ═══ */
   sectionTitle: {
     fontSize: 14,
     fontWeight: '800',
@@ -386,46 +598,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     paddingVertical: 10,
     textAlign: 'center',
-  },
-  dutyBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    marginBottom: 10,
-    gap: 10,
-  },
-  dutyLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  dutyDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  dutyStatusText: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  dutySubText: {
-    fontSize: 10,
-    marginTop: 2,
-  },
-  dutyToggleBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  dutyToggleText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
   },
 })
