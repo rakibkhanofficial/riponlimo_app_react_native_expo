@@ -72,13 +72,13 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 
         <View style={styles.actionsRow}>
           {/* Server Config Indicator */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.actionBtn, { borderColor: colors.border, backgroundColor: colors.surfaceElevated }]}
             onPress={() => setIpModalVisible(true)}
             activeOpacity={0.7}
           >
             <Ionicons name="server-outline" size={16} color={colors.gold} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Theme Switcher */}
           <TouchableOpacity
