@@ -140,3 +140,27 @@ export interface Booking {
     email: string | null;
   } | null;
 }
+
+export interface ServiceType {
+  id: string;
+  name: string;
+  description?: string | null;
+  basePrice: number;
+  pricePerUnit?: number | null;
+  createdAt?: string;
+  _count?: {
+    bookings: number;
+  };
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  discountVal: number;
+  minOrderVal?: number | null;
+  validUntil: string;
+  usageLimit?: number | null;
+  usedCount?: number;
+  createdAt?: string;
+}

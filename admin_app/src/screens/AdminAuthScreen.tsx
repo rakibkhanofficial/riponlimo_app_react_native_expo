@@ -153,15 +153,17 @@ export const AdminAuthScreen: React.FC<AdminAuthScreenProps> = ({ onLoginSuccess
 
           {/* Submit Button */}
           <TouchableOpacity
-            style={[styles.loginBtn, { backgroundColor: colors.gold }]}
+            style={[styles.loginBtn, { backgroundColor: colors.primary }]}
             onPress={() => handleLogin()}
             disabled={loading}
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator color="#0B0E14" size="small" />
+              <ActivityIndicator color={colors.buttonText} size="small" />
             ) : (
-              <Text style={styles.loginBtnText}>ACCESS DISPATCH CONSOLE</Text>
+              <Text style={[styles.loginBtnText, { color: colors.buttonText }]}>
+                ACCESS DISPATCH CONSOLE
+              </Text>
             )}
           </TouchableOpacity>
         </View>

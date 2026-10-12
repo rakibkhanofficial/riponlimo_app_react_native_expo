@@ -1,40 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   View,
-  Text,
-  TouchableOpacity,
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { AdminUser } from './src/types';
 import { getStoredAdmin, clearAdmin, AdminApi } from './src/services/api';
 import { AdminHeader } from './src/components/common/AdminHeader';
+import { AdminSidebar, AdminRoute } from './src/components/common/AdminSidebar';
 
 // Screens
 import { AdminAuthScreen } from './src/screens/AdminAuthScreen';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { BookingsScreen } from './src/screens/BookingsScreen';
 import { FleetScreen } from './src/screens/FleetScreen';
+import { ServicesScreen } from './src/screens/ServicesScreen';
+import { CouponsScreen } from './src/screens/CouponsScreen';
 import { DriversScreen } from './src/screens/DriversScreen';
 import { ClientsScreen } from './src/screens/ClientsScreen';
+import { DriverPortalScreen } from './src/screens/DriverPortalScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
-
-type TabType = 'dashboard' | 'bookings' | 'fleet' | 'drivers' | 'clients' | 'settings';
 
 function MainApp() {
   const { colors, mode } = useTheme();
 
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeRoute, setActiveRoute] = useState<AdminRoute>('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookingFilter, setBookingFilter] = useState<string>('ALL');
   const [pendingBadge, setPendingBadge] = useState<number>(0);
 
@@ -61,27 +60,27 @@ function MainApp() {
   const handleLogout = async () => {
     await clearAdmin();
     setAdmin(null);
-    setActiveTab('dashboard');
+    setActiveRoute('dashboard');
   };
 
-  const switchTab = (tab: TabType) => {
+  const switchRoute = (route: AdminRoute) => {
     try {
       Haptics.selectionAsync();
     } catch {
       // ignore
     }
-    setActiveTab(tab);
+    setActiveRoute(route);
   };
 
   const navigateToBookings = (filter: string = 'ALL') => {
     setBookingFilter(filter);
-    switchTab('bookings');
+    switchRoute('bookings');
   };
 
   if (authLoading) {
     return (
       <View style={[styles.loadingCenter, { backgroundColor: colors.background }]}>
-        <ActivityIndicator color={colors.gold} size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
@@ -96,23 +95,29 @@ function MainApp() {
   }
 
   const renderActiveScreen = () => {
-    switch (activeTab) {
+    switch (activeRoute) {
       case 'dashboard':
         return (
           <DashboardScreen
             onNavigateToBookings={navigateToBookings}
-            onNavigateToFleet={() => switchTab('fleet')}
-            onNavigateToDrivers={() => switchTab('drivers')}
+            onNavigateToFleet={() => switchRoute('fleet')}
+            onNavigateToDrivers={() => switchRoute('drivers')}
           />
         );
       case 'bookings':
         return <BookingsScreen initialFilter={bookingFilter} />;
       case 'fleet':
         return <FleetScreen />;
+      case 'services':
+        return <ServicesScreen />;
+      case 'coupons':
+        return <CouponsScreen />;
       case 'drivers':
         return <DriversScreen />;
       case 'clients':
         return <ClientsScreen />;
+      case 'driver_portal':
+        return <DriverPortalScreen admin={admin} />;
       case 'settings':
         return <SettingsScreen admin={admin} onLogout={handleLogout} />;
       default:
@@ -120,62 +125,44 @@ function MainApp() {
     }
   };
 
-  const tabs: { key: TabType; label: string; icon: any; activeIcon: any; badge?: number }[] = [
-    { key: 'dashboard', label: 'Analytics', icon: 'grid-outline', activeIcon: 'grid' },
-    { key: 'bookings', label: 'Orders', icon: 'calendar-outline', activeIcon: 'calendar', badge: pendingBadge },
-    { key: 'fleet', label: 'Fleet', icon: 'car-sport-outline', activeIcon: 'car-sport' },
-    { key: 'drivers', label: 'Chauffeurs', icon: 'people-outline', activeIcon: 'people' },
-    { key: 'clients', label: 'Clients', icon: 'person-outline', activeIcon: 'person' },
-    { key: 'settings', label: 'Settings', icon: 'settings-outline', activeIcon: 'settings' },
-  ];
+  const screenTitles: Record<AdminRoute, { title: string; subtitle: string }> = {
+    dashboard: { title: 'RIPON LIMO', subtitle: 'EXECUTIVE DISPATCH OVERVIEW' },
+    bookings: { title: 'RESERVATIONS', subtitle: 'ACTIVE & HISTORICAL ORDERS' },
+    fleet: { title: 'LUXURY FLEET', subtitle: 'CHAUFFEUR FLEET ROSTER' },
+    services: { title: 'SERVICES CATALOG', subtitle: 'TARIFFS & TRIP TIERS' },
+    coupons: { title: 'PROMOTIONS', subtitle: 'VIP VOUCHERS & DISCOUNTS' },
+    drivers: { title: 'CHAUFFEURS', subtitle: 'EXECUTIVE DRIVER ROSTER' },
+    clients: { title: 'CLIENT PROFILES', subtitle: 'ACCOUNT DIRECTORY' },
+    driver_portal: { title: 'DRIVER COCKPIT', subtitle: 'LIVE CHAUFFEUR DISPATCH' },
+    settings: { title: 'SETTINGS', subtitle: 'SYSTEM & API ENDPOINT' },
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
 
-      {/* Admin Top Header */}
-      <AdminHeader admin={admin} onLogout={handleLogout} />
+      {/* Admin Top Header with Sidebar Trigger */}
+      <AdminHeader
+        admin={admin}
+        onLogout={handleLogout}
+        onOpenSidebar={() => setSidebarOpen(true)}
+        title={screenTitles[activeRoute]?.title}
+        subtitle={screenTitles[activeRoute]?.subtitle}
+      />
 
       {/* Screen Body */}
       <View style={styles.body}>{renderActiveScreen()}</View>
 
-      {/* Bottom Navigation Bar */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
-        {tabs.map((t) => {
-          const isActive = activeTab === t.key;
-          return (
-            <TouchableOpacity
-              key={t.key}
-              style={styles.tabItem}
-              onPress={() => switchTab(t.key)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.iconContainer}>
-                <Ionicons
-                  name={isActive ? t.activeIcon : t.icon}
-                  size={20}
-                  color={isActive ? colors.gold : colors.textMuted}
-                />
-                {t.badge && t.badge > 0 ? (
-                  <View style={[styles.tabBadge, { backgroundColor: colors.warning }]}>
-                    <Text style={styles.tabBadgeText}>{t.badge}</Text>
-                  </View>
-                ) : null}
-              </View>
-              <Text
-                style={[
-                  styles.tabLabel,
-                  { color: isActive ? colors.gold : colors.textMuted },
-                  isActive && styles.tabLabelActive,
-                ]}
-                numberOfLines={1}
-              >
-                {t.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {/* Side Navigation Drawer */}
+      <AdminSidebar
+        visible={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activeRoute={activeRoute}
+        onRouteChange={switchRoute}
+        admin={admin}
+        onLogout={handleLogout}
+        pendingBadges={{ bookings: pendingBadge }}
+      />
     </SafeAreaView>
   );
 }
@@ -193,7 +180,6 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? 24 : 0,
   },
   loadingCenter: {
     flex: 1,
@@ -202,49 +188,5 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-  },
-  bottomBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 12 : 8,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingVertical: 2,
-  },
-  iconContainer: {
-    position: 'relative',
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -10,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 3,
-  },
-  tabBadgeText: {
-    color: '#0B0E14',
-    fontSize: 9,
-    fontWeight: '900',
-  },
-  tabLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    marginTop: 3,
-  },
-  tabLabelActive: {
-    fontWeight: '800',
   },
 });

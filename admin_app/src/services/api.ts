@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import { AnalyticsData, Booking, Car, Driver, ClientUser, AdminUser } from '../types';
+import { AnalyticsData, Booking, Car, Driver, ClientUser, AdminUser, ServiceType, Coupon } from '../types';
 
 const STORAGE_API_KEY = 'ripon_limo_admin_api_url';
 const STORAGE_ADMIN_KEY = 'ripon_limo_admin_user';
@@ -333,10 +333,87 @@ const MOCK_CLIENTS: ClientUser[] = [
   },
 ];
 
+const MOCK_SERVICES: ServiceType[] = [
+  {
+    id: 'srv-1',
+    name: 'Airport Transfer',
+    description: 'Direct VIP terminal chauffeur service with flight tracking and luggage assistance.',
+    basePrice: 150,
+    pricePerUnit: 5.5,
+    createdAt: '2024-01-01T00:00:00Z',
+    _count: { bookings: 24 },
+  },
+  {
+    id: 'srv-2',
+    name: 'Hourly As Directed',
+    description: 'On-demand standby executive chauffeur for meetings, dining, and city travel.',
+    basePrice: 110,
+    pricePerUnit: 110,
+    createdAt: '2024-01-05T00:00:00Z',
+    _count: { bookings: 11 },
+  },
+  {
+    id: 'srv-3',
+    name: 'Special Event & Gala',
+    description: 'Motorcade luxury transportation for galas, red carpets, and VIP social occasions.',
+    basePrice: 350,
+    pricePerUnit: 6.0,
+    createdAt: '2024-01-10T00:00:00Z',
+    _count: { bookings: 8 },
+  },
+  {
+    id: 'srv-4',
+    name: 'City to City Executive',
+    description: 'Long-distance intercity chauffeur travel with high-speed in-cabin Wi-Fi and quiet comfort.',
+    basePrice: 450,
+    pricePerUnit: 4.8,
+    createdAt: '2024-01-15T00:00:00Z',
+    _count: { bookings: 5 },
+  },
+];
+
+const MOCK_COUPONS: Coupon[] = [
+  {
+    id: 'cpn-1',
+    code: 'VIPWELCOME',
+    discountType: 'PERCENTAGE',
+    discountVal: 15,
+    minOrderVal: 100,
+    validUntil: '2026-12-31T23:59:59Z',
+    usageLimit: 100,
+    usedCount: 38,
+    createdAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'cpn-2',
+    code: 'EXECUTIVE50',
+    discountType: 'FIXED',
+    discountVal: 50,
+    minOrderVal: 300,
+    validUntil: '2026-12-31T23:59:59Z',
+    usageLimit: 50,
+    usedCount: 19,
+    createdAt: '2024-02-01T00:00:00Z',
+  },
+  {
+    id: 'cpn-3',
+    code: 'SUMMERGALA',
+    discountType: 'PERCENTAGE',
+    discountVal: 20,
+    minOrderVal: 250,
+    validUntil: '2026-09-30T23:59:59Z',
+    usageLimit: 200,
+    usedCount: 72,
+    createdAt: '2024-05-01T00:00:00Z',
+  },
+];
+
 // In-memory mutation buffer for offline/demo persistence
 let localBookings = [...MOCK_BOOKINGS];
 let localCars = [...MOCK_CARS];
 let localDrivers = [...MOCK_DRIVERS];
+let localServices = [...MOCK_SERVICES];
+let localCoupons = [...MOCK_COUPONS];
 
 export const AdminApi = {
   // Authentication
@@ -696,5 +773,193 @@ export const AdminApi = {
       // fallback
     }
     return MOCK_CLIENTS;
+  },
+
+  // Service Types
+  getServices: async (): Promise<ServiceType[]> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/services?adminId=${admin?.id || 'admin-1'}`, {
+        headers: {
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) return data;
+      }
+    } catch {
+      // fallback
+    }
+    return localServices;
+  },
+
+  createService: async (data: { name: string; description?: string; basePrice: number; pricePerUnit?: number }): Promise<ServiceType> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/services?adminId=${admin?.id || 'admin-1'}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        localServices.unshift(created);
+        return created;
+      }
+    } catch {
+      // fallback
+    }
+    const newService: ServiceType = {
+      id: `svc-${Date.now()}`,
+      name: data.name,
+      description: data.description || '',
+      basePrice: Number(data.basePrice),
+      pricePerUnit: data.pricePerUnit ? Number(data.pricePerUnit) : null,
+      createdAt: new Date().toISOString(),
+      _count: { bookings: 0 },
+    };
+    localServices.unshift(newService);
+    return newService;
+  },
+
+  updateService: async (id: string, data: Partial<ServiceType>): Promise<ServiceType> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/services?id=${id}&adminId=${admin?.id || 'admin-1'}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        localServices = localServices.map(s => (s.id === id ? { ...s, ...updated } : s));
+        return updated;
+      }
+    } catch {
+      // fallback
+    }
+    localServices = localServices.map(s => (s.id === id ? { ...s, ...data } : s));
+    return localServices.find(s => s.id === id)!;
+  },
+
+  deleteService: async (id: string): Promise<boolean> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/services?id=${id}&adminId=${admin?.id || 'admin-1'}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+      });
+      if (res.ok) {
+        localServices = localServices.filter(s => s.id !== id);
+        return true;
+      }
+    } catch {
+      // fallback
+    }
+    localServices = localServices.filter(s => s.id !== id);
+    return true;
+  },
+
+  // Coupons
+  getCoupons: async (): Promise<Coupon[]> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/coupons?adminId=${admin?.id || 'admin-1'}`, {
+        headers: {
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) return data;
+      }
+    } catch {
+      // fallback
+    }
+    return localCoupons;
+  },
+
+  createCoupon: async (data: {
+    code: string;
+    discountType: 'PERCENTAGE' | 'FIXED';
+    discountVal: number;
+    minOrderVal?: number;
+    validUntil: string;
+    usageLimit?: number;
+  }): Promise<Coupon> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/coupons?adminId=${admin?.id || 'admin-1'}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        localCoupons.unshift(created);
+        return created;
+      }
+    } catch {
+      // fallback
+    }
+    const newCoupon: Coupon = {
+      id: `cpn-${Date.now()}`,
+      code: data.code.toUpperCase(),
+      discountType: data.discountType,
+      discountVal: Number(data.discountVal),
+      minOrderVal: data.minOrderVal ? Number(data.minOrderVal) : null,
+      validUntil: data.validUntil,
+      usageLimit: data.usageLimit ? Number(data.usageLimit) : null,
+      usedCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    localCoupons.unshift(newCoupon);
+    return newCoupon;
+  },
+
+  deleteCoupon: async (id: string): Promise<boolean> => {
+    const baseUrl = await getBaseUrl();
+    const admin = await getStoredAdmin();
+    try {
+      const res = await fetch(`${baseUrl}/api/admin/coupons?id=${id}&adminId=${admin?.id || 'admin-1'}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-id': admin?.id || 'admin-1',
+          'x-user-id': admin?.id || 'admin-1',
+        },
+      });
+      if (res.ok) {
+        localCoupons = localCoupons.filter(c => c.id !== id);
+        return true;
+      }
+    } catch {
+      // fallback
+    }
+    localCoupons = localCoupons.filter(c => c.id !== id);
+    return true;
   },
 };

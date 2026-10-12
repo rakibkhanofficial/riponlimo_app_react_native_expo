@@ -8,6 +8,7 @@ import { AdminUser } from '../../types';
 interface AdminHeaderProps {
   admin: AdminUser | null;
   onLogout: () => void;
+  onOpenSidebar?: () => void;
   title?: string;
   subtitle?: string;
 }
@@ -15,6 +16,7 @@ interface AdminHeaderProps {
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   admin,
   onLogout,
+  onOpenSidebar,
   title = 'RIPON LIMO',
   subtitle = 'EXECUTIVE ADMIN CONSOLE',
 }) => {
@@ -49,12 +51,22 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
       <View style={styles.topRow}>
         <View style={styles.brandContainer}>
-          <View style={styles.logoBadge}>
-            <Ionicons name="shield-checkmark" size={16} color={colors.gold} />
+          {onOpenSidebar && (
+            <TouchableOpacity
+              style={[styles.menuBtn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+              onPress={onOpenSidebar}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="menu" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
+
+          <View style={[styles.logoBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <Ionicons name="shield-checkmark" size={16} color={colors.text} />
           </View>
           <View>
             <Text style={[styles.brandTitle, { color: colors.text }]}>{title}</Text>
-            <Text style={[styles.brandSubtitle, { color: colors.gold }]}>{subtitle}</Text>
+            <Text style={[styles.brandSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>
           </View>
         </View>
 
@@ -191,15 +203,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  menuBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 2,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoBadge: {
     width: 32,
     height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    borderRadius: 2,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   brandTitle: {
     fontSize: 16,
