@@ -3,19 +3,20 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   RefreshControl,
   TouchableOpacity,
   StatusBar,
   Image,
+  Clipboard,
+  Alert,
 } from 'react-native'
-import { Feather, Ionicons } from '@expo/vector-icons'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Feather } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import { Header } from '../components/common/Header'
-import { Badge } from '../components/common/Badge'
 import { Input } from '../components/common/Input'
 import { Button } from '../components/common/Button'
 import { Booking } from '../types'
@@ -27,6 +28,13 @@ interface MyRidesScreenProps {
   onOpenAuth: () => void
 }
 
+const statusStyles: Record<string, { dot: string; color: string; bg: string }> = {
+  PENDING: { dot: '#F59E0B', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+  CONFIRMED: { dot: '#3B82F6', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
+  COMPLETED: { dot: '#22C55E', color: '#22C55E', bg: 'rgba(34,197,94,0.1)' },
+  CANCELLED: { dot: '#EF4444', color: '#EF4444', bg: 'rgba(239,68,68,0.1)' },
+}
+
 export const MyRidesScreen: React.FC<MyRidesScreenProps> = ({
   onBookRidePress,
   onOpenAuth,
@@ -36,60 +44,41 @@ export const MyRidesScreen: React.FC<MyRidesScreenProps> = ({
   const [bookings, setBookings] = useState<Booking[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'UPCOMING' | 'COMPLETED'>('ALL')
 
   useEffect(() => {
-    loadBookings()
-  }, [user])
+    if (isAuthenticated && user?.id) {
+      loadBookings()
+    } else {
+      setBookings([])
+    }
+  }, [user, isAuthenticated])
 
   const loadBookings = async () => {
+    if (!user?.id) return
     setRefreshing(true)
     try {
-      if (user?.id) {
-        const data = await api.getUserBookings(user.id)
-        setBookings(data)
-      } else {
-        // Sample reservation demo for guest testing
-        setBookings([
-          {
-            id: 'cmtsvip99001',
-            userId: 'guest',
-            carId: 'cmtsaqvvw000a13is7v3ul06p',
-            serviceTypeId: 'cmtsaqyqa000l13issf06hoj6',
-            tripType: 'POINT_TO_POINT',
-            pickupLocation: 'JFK International Airport Terminal 4',
-            dropLocation: 'The St. Regis New York, 5th Avenue',
-            pickupTime: new Date(Date.now() + 86400000).toISOString(),
-            status: 'CONFIRMED',
-            paymentStatus: 'PAID',
-            totalAmount: 185,
-            passengerCount: 2,
-            luggageCount: 3,
-            createdAt: new Date().toISOString(),
-            car: {
-              brand: 'Cadillac',
-              model: 'Escalade ESV VIP',
-              images: ['/cars/cadillac-escalade.png'],
-            },
-          },
-        ])
-      }
+      const data = await api.getUserBookings(user.id)
+      setBookings(Array.isArray(data) ? data : [])
     } catch (e) {
-      console.log('Error loading bookings', e)
+      console.log('Error loading user bookings', e)
+      setBookings([])
     } finally {
       setRefreshing(false)
     }
   }
 
+  const upcoming = bookings.filter(b => ['PENDING', 'CONFIRMED'].includes(b.status))
+  const completed = bookings.filter(b => b.status === 'COMPLETED')
+  const totalSpent = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+
   const filteredBookings = bookings.filter(b => {
-    // Status filter
-    if (statusFilter === 'ACTIVE' && (b.status === 'COMPLETED' || b.status === 'CANCELLED')) {
+    if (statusFilter === 'UPCOMING' && !['PENDING', 'CONFIRMED'].includes(b.status)) {
       return false
     }
     if (statusFilter === 'COMPLETED' && b.status !== 'COMPLETED') {
       return false
     }
-    // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       const idMatch = b.id.toLowerCase().includes(q)
@@ -100,193 +89,283 @@ export const MyRidesScreen: React.FC<MyRidesScreenProps> = ({
     return true
   })
 
+  const handleCopyReferral = () => {
+    const code = user?.referralCode || 'RIPONVIP'
+    Clipboard.setString(code)
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    Alert.alert('Referral Code Copied', `Code ${code} copied to clipboard!`)
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      <Header title="MY RIDES" subtitle="CLIENT RESERVATION PORTAL" onProfilePress={onOpenAuth} />
+      <Header onProfilePress={onOpenAuth} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={loadBookings}
-            tintColor={theme.primary}
-          />
+          isAuthenticated ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={loadBookings}
+              tintColor={theme.primary}
+            />
+          ) : undefined
         }
       >
-        {/* Track by Reservation Search Input */}
-        <View style={styles.searchContainer}>
-          <Input
-            placeholder="Track ride by Reservation # or location"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            leftIcon={<Feather name="search" size={16} color={theme.primary} />}
-            rightIcon={
-              searchQuery ? (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Feather name="x" size={16} color={theme.textMuted} />
-                </TouchableOpacity>
-              ) : undefined
-            }
-          />
-        </View>
-
-        {/* Status Filter Tabs */}
-        <View style={styles.filterBar}>
-          {[
-            { id: 'ALL', label: 'All Rides' },
-            { id: 'ACTIVE', label: 'Active & Upcoming' },
-            { id: 'COMPLETED', label: 'Completed' },
-          ].map(tab => {
-            const isSelected = statusFilter === tab.id
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                  setStatusFilter(tab.id as any)
-                }}
-                style={[
-                  styles.filterPill,
-                  {
-                    backgroundColor: isSelected ? theme.primary : theme.surface,
-                    borderColor: isSelected ? theme.primary : theme.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    {
-                      color: isSelected ? '#0A0D14' : theme.textPrimary,
-                      fontWeight: isSelected ? '700' : '500',
-                    },
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            )
-          })}
-        </View>
-
-        {!isAuthenticated && (
-          <View style={[styles.guestNotice, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.guestNoticeTitle, { color: theme.primary }]}>Sign In to Sync Rides</Text>
-              <Text style={[styles.guestNoticeText, { color: theme.textMuted }]}>
-                Access real-time chauffeur GPS tracking and invoice history across all your devices.
-              </Text>
+        {/* ========================================================
+            UNAUTHENTICATED GATE (NO DUMMY DATA SHOWN)
+           ======================================================== */}
+        {!isAuthenticated ? (
+          <View style={[styles.authLockCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.lockIconBox, { borderColor: theme.border, backgroundColor: theme.surface }]}>
+              <Feather name="lock" size={32} color={theme.accentGreen} />
             </View>
-            <TouchableOpacity onPress={onOpenAuth} style={[styles.signInBtn, { backgroundColor: theme.primary }]}>
-              <Text style={styles.signInBtnText}>Sign In</Text>
+            <Text style={[styles.lockOverline, { color: theme.accentGreen }]}>
+              CLIENT PORTAL ACCESS
+            </Text>
+            <Text style={[styles.lockTitle, { color: theme.text }]}>
+              PLEASE SIGN IN TO VIEW YOUR RIDES
+            </Text>
+            <Text style={[styles.lockSubtitle, { color: theme.textMuted }]}>
+              Sign in with your client account to track real-time bookings, chauffeur assignments, and past trip invoices.
+            </Text>
+
+            <Button
+              title="SIGN IN / REGISTER"
+              variant="primary"
+              onPress={onOpenAuth}
+              style={styles.authLockBtn}
+            />
+
+            <TouchableOpacity
+              onPress={onBookRidePress}
+              style={[styles.guestBookBtn, { borderColor: theme.border }]}
+            >
+              <Text style={[styles.guestBookBtnText, { color: theme.text }]}>
+                NEW RESERVATION AS GUEST
+              </Text>
             </TouchableOpacity>
           </View>
-        )}
-
-        {/* Bookings List */}
-        {filteredBookings.length > 0 ? (
-          filteredBookings.map(item => {
-            const code = item.id.slice(-6).toUpperCase()
-            const carImg = item.car?.images?.[0] || '/cars/cadillac-escalade.png'
-
-            return (
-              <View
-                key={item.id}
-                style={[
-                  styles.rideCard,
-                  {
-                    backgroundColor: theme.card,
-                    borderColor: theme.cardBorder,
-                    shadowColor: theme.isDark ? '#000000' : '#64748B',
-                  },
-                ]}
-              >
-                <View style={[styles.cardHeader, { borderBottomColor: theme.borderSubtle }]}>
-                  <View style={styles.headerLeft}>
-                    <Text style={[styles.resCode, { color: theme.primary }]}>#{code}</Text>
-                    <Text style={[styles.rideDate, { color: theme.textMuted }]}>
-                      {new Date(item.pickupTime).toLocaleDateString([], {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </Text>
-                  </View>
-                  <Badge
-                    label={item.status}
-                    variant={
-                      item.status === 'CONFIRMED'
-                        ? 'success'
-                        : item.status === 'PENDING'
-                        ? 'warning'
-                        : item.status === 'COMPLETED'
-                        ? 'neutral'
-                        : 'error'
-                    }
-                  />
-                </View>
-
-                {/* Vehicle & Fare Row */}
-                <View style={styles.cardBody}>
-                  <Image
-                    source={resolveCarImage(carImg)}
-                    style={styles.rideThumb}
-                    resizeMode="contain"
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.carName, { color: theme.textPrimary }]}>
-                      {item.car ? `${item.car.brand} ${item.car.model}` : 'Executive Chauffeur Vehicle'}
-                    </Text>
-                    <Text style={[styles.rideTime, { color: theme.textMuted }]}>
-                      Pickup at {new Date(item.pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
-                    <Text style={[styles.fare, { color: theme.primary }]}>
-                      ${item.totalAmount}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Route Route */}
-                <View style={[styles.routeBox, { backgroundColor: theme.surfaceSubtle, borderColor: theme.borderSubtle }]}>
-                  <View style={styles.routeItem}>
-                    <Feather name="circle" size={12} color={theme.primary} />
-                    <Text style={[styles.routeText, { color: theme.textSecondary }]} numberOfLines={1}>
-                      {item.pickupLocation}
-                    </Text>
-                  </View>
-                  {item.dropLocation && (
-                    <View style={styles.routeItem}>
-                      <Feather name="map-pin" size={12} color={theme.error} />
-                      <Text style={[styles.routeText, { color: theme.textSecondary }]} numberOfLines={1}>
-                        {item.dropLocation}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            )
-          })
         ) : (
-          <View style={styles.emptyContainer}>
-            <View style={[styles.emptyIconCircle, { backgroundColor: theme.surfaceSubtle }]}>
-              <Feather name="calendar" size={32} color={theme.primary} />
+          /* ========================================================
+              AUTHENTICATED CLIENT DASHBOARD (LIVE API DATA)
+             ======================================================== */
+          <>
+            {/* DASHBOARD WELCOME HEADER */}
+            <View style={styles.dashboardHeader}>
+              <Text style={[styles.overTitle, { color: theme.accentGreen }]}>
+                CLIENT PORTAL
+              </Text>
+              <Text style={[styles.mainWelcome, { color: theme.text }]}>
+                WELCOME,{' '}
+                <Text style={{ fontWeight: '800' }}>
+                  {(user?.name ? user.name.split(' ')[0] : 'CLIENT').toUpperCase()}
+                </Text>
+              </Text>
             </View>
-            <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>No Reservations Found</Text>
-            <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
-              {searchQuery ? 'No rides matching your search criteria.' : 'You have not scheduled any rides yet.'}
-            </Text>
-            <View style={{ marginTop: 20 }}>
-              <Button
-                title="Book a Limousine"
-                onPress={onBookRidePress}
-                size="md"
-                iconRight={<Feather name="arrow-right" size={16} color="#0A0D14" />}
+
+            {/* 4 KPI STAT CARDS (Strict Web Parity) */}
+            <View style={styles.statsGrid}>
+              <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Text style={[styles.statLabel, { color: theme.textMuted }]}>TOTAL RIDES</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>{bookings.length}</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Text style={[styles.statLabel, { color: theme.textMuted }]}>UPCOMING</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>{upcoming.length}</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Text style={[styles.statLabel, { color: theme.textMuted }]}>COMPLETED</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>{completed.length}</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Text style={[styles.statLabel, { color: theme.textMuted }]}>TOTAL SPENT</Text>
+                <Text style={[styles.statValue, { color: theme.accentGreen }]}>${totalSpent.toLocaleString()}</Text>
+              </View>
+            </View>
+
+            {/* Referral Privileges */}
+            <View style={[styles.referralCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.referralOverline, { color: theme.accentGreen }]}>REFERRAL PRIVILEGES</Text>
+                <Text style={[styles.referralCodeText, { color: theme.text }]}>
+                  {user?.referralCode || 'RIPONVIP'}
+                </Text>
+                <Text style={[styles.referralDesc, { color: theme.textMuted }]}>
+                  Share your referral code to receive credits toward future chauffeured trips.
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleCopyReferral}
+                style={[styles.copyBtn, { backgroundColor: theme.primary }]}
+              >
+                <Text style={[styles.copyBtnText, { color: theme.buttonText }]}>COPY</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Search & Filter */}
+            <View style={styles.searchSection}>
+              <Input
+                placeholder="Search by ID, airport, or hotel"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                leftIcon={<Feather name="search" size={16} color={theme.textMuted} />}
+                rightIcon={
+                  searchQuery ? (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                      <Feather name="x" size={16} color={theme.textMuted} />
+                    </TouchableOpacity>
+                  ) : undefined
+                }
+                containerStyle={{ marginBottom: 12 }}
               />
+
+              <View style={[styles.filterTabs, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                {(['ALL', 'UPCOMING', 'COMPLETED'] as const).map(f => {
+                  const isActive = statusFilter === f
+                  return (
+                    <TouchableOpacity
+                      key={f}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                        setStatusFilter(f)
+                      }}
+                      style={[
+                        styles.filterTab,
+                        isActive && { backgroundColor: theme.primary },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.filterTabText,
+                          {
+                            color: isActive ? theme.buttonText : theme.textMuted,
+                            fontWeight: isActive ? '700' : '500',
+                          },
+                        ]}
+                      >
+                        {f}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
             </View>
-          </View>
+
+            {/* Bookings List from Live API */}
+            <View style={styles.bookingsListSection}>
+              <Text style={[styles.sectionHeading, { color: theme.textMuted }]}>
+                {statusFilter === 'UPCOMING'
+                  ? 'UPCOMING TRIPS'
+                  : statusFilter === 'COMPLETED'
+                  ? 'PAST COMPLETED TRIPS'
+                  : 'ALL RESERVATIONS'}
+              </Text>
+
+              {filteredBookings.length > 0 ? (
+                filteredBookings.map(item => {
+                  const code = item.id.slice(-6).toUpperCase()
+                  const carImg = item.car?.images?.[0] || '/cars/cadillac-escalade.png'
+                  const statusCfg = statusStyles[item.status] || statusStyles.PENDING
+
+                  return (
+                    <View
+                      key={item.id}
+                      style={[styles.bookingCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+                    >
+                      {/* Top Bar with ID & Status */}
+                      <View style={[styles.bookingCardHeader, { borderBottomColor: theme.borderSubtle }]}>
+                        <View>
+                          <Text style={[styles.bookingIdLabel, { color: theme.textMuted }]}>BOOKING ID</Text>
+                          <Text style={[styles.bookingIdValue, { color: theme.text }]}>#{code}</Text>
+                        </View>
+                        <View style={[styles.statusBadge, { backgroundColor: statusCfg.bg, borderColor: statusCfg.color }]}>
+                          <View style={[styles.statusDot, { backgroundColor: statusCfg.dot }]} />
+                          <Text style={[styles.statusText, { color: statusCfg.color }]}>
+                            {item.status}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Body with Car & Amount */}
+                      <View style={styles.bookingCardBody}>
+                        <Image
+                          source={resolveCarImage(carImg)}
+                          style={styles.carThumb as any}
+                          resizeMode="contain"
+                        />
+                        <View style={styles.bookingCardBodyInfo}>
+                          <Text style={[styles.carNameText, { color: theme.text }]}>
+                            {item.car ? `${item.car.brand} ${item.car.model}` : 'Chauffeured Vehicle'}
+                          </Text>
+                          <Text style={[styles.tripTypeText, { color: theme.textMuted }]}>
+                            {item.tripType.replace(/_/g, ' ')}
+                          </Text>
+                          <Text style={[styles.fareAmountText, { color: theme.text }]}>
+                            ${item.totalAmount}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Date & Time */}
+                      <View style={[styles.infoRow, { borderTopColor: theme.borderSubtle }]}>
+                        <Feather name="calendar" size={14} color={theme.textMuted} />
+                        <Text style={[styles.infoRowText, { color: theme.text }]}>
+                          {new Date(item.pickupTime).toLocaleDateString([], {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}{' '}
+                          •{' '}
+                          {new Date(item.pickupTime).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+
+                      {/* Pickup & Dropoff Route */}
+                      <View style={[styles.routeBox, { backgroundColor: theme.background, borderColor: theme.borderSubtle }]}>
+                        <View style={styles.routeItem}>
+                          <Feather name="circle" size={12} color={theme.accentGreen} />
+                          <Text style={[styles.routeText, { color: theme.text }]} numberOfLines={2}>
+                            {item.pickupLocation}
+                          </Text>
+                        </View>
+                        {item.dropLocation && (
+                          <View style={styles.routeItem}>
+                            <Feather name="map-pin" size={12} color="#EF4444" />
+                            <Text style={[styles.routeText, { color: theme.text }]} numberOfLines={2}>
+                              {item.dropLocation}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  )
+                })
+              ) : (
+                <View style={[styles.emptyBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <Feather name="calendar" size={32} color={theme.textMuted} style={{ marginBottom: 12 }} />
+                  <Text style={[styles.emptyTitle, { color: theme.text }]}>No Reservations Found</Text>
+                  <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
+                    {searchQuery
+                      ? 'No bookings matching your criteria.'
+                      : 'You do not have any scheduled chauffeured reservations yet.'}
+                  </Text>
+                  <Button
+                    title="RESERVE A VEHICLE"
+                    variant="primary"
+                    onPress={onBookRidePress}
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                </View>
+              )}
+            </View>
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -299,144 +378,293 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 16,
     paddingBottom: 40,
   },
-  searchContainer: {
+
+  // Auth Lock Card
+  authLockCard: {
+    borderWidth: 1,
+    borderRadius: 2,
+    padding: 24,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  lockIconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 2,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  lockOverline: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 2,
     marginBottom: 6,
   },
-  filterBar: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
+  lockTitle: {
+    fontSize: 20,
+    fontWeight: '300',
+    letterSpacing: 2,
+    textAlign: 'center',
+    marginBottom: 10,
   },
-  filterPill: {
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+  lockSubtitle: {
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  authLockBtn: {
+    width: '100%',
+    height: 50,
+    marginBottom: 12,
+  },
+  guestBookBtn: {
+    width: '100%',
+    height: 48,
     borderWidth: 1,
+    borderRadius: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  filterText: {
-    fontSize: 12,
+  guestBookBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
   },
-  guestNotice: {
+
+  // Dashboard Header
+  dashboardHeader: {
+    marginBottom: 20,
+  },
+  overTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  mainWelcome: {
+    fontSize: 26,
+    fontWeight: '300',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  statBox: {
+    width: '48.5%',
+    borderWidth: 1,
+    borderRadius: 2,
+    padding: 14,
+  },
+  statLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: '300',
+    letterSpacing: 1,
+  },
+  referralCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 14,
+    justifyContent: 'space-between',
     borderWidth: 1,
-    marginBottom: 14,
-    gap: 12,
+    borderRadius: 2,
+    padding: 16,
+    marginBottom: 20,
   },
-  guestNoticeTitle: {
-    fontSize: 13,
+  referralOverline: {
+    fontSize: 9,
     fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: 2,
   },
-  guestNoticeText: {
+  referralCodeText: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 2,
+    fontFamily: 'monospace',
+    marginBottom: 4,
+  },
+  referralDesc: {
     fontSize: 11,
-    marginTop: 2,
     lineHeight: 16,
   },
-  signInBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+  copyBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 2,
   },
-  signInBtnText: {
-    color: '#0A0D14',
-    fontSize: 12,
+  copyBtnText: {
+    fontSize: 11,
     fontWeight: '700',
+    letterSpacing: 1.5,
   },
-  rideCard: {
-    borderRadius: 16,
-    borderWidth: 1.5,
-    marginBottom: 14,
+  searchSection: {
+    marginBottom: 16,
+  },
+  filterTabs: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 2,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
   },
-  cardHeader: {
+  filterTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterTabText: {
+    fontSize: 10,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  bookingsListSection: {
+    marginTop: 8,
+  },
+  sectionHeading: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+  bookingCard: {
+    borderWidth: 1,
+    borderRadius: 2,
+    padding: 16,
+    marginBottom: 14,
+  },
+  bookingCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     borderBottomWidth: 1,
+    paddingBottom: 12,
+    marginBottom: 12,
   },
-  headerLeft: {
+  bookingIdLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  bookingIdValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    fontFamily: 'monospace',
+    marginTop: 2,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 2,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  bookingCardBody: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  carThumb: {
+    width: 110,
+    height: 65,
+    marginRight: 12,
+  },
+  bookingCardBodyInfo: {
+    flex: 1,
+  },
+  carNameText: {
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  tripTypeText: {
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  fareAmountText: {
+    fontSize: 18,
+    fontWeight: '300',
+    letterSpacing: 1,
+    marginTop: 4,
+  },
+  infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    borderTopWidth: 1,
+    paddingTop: 10,
+    marginBottom: 10,
   },
-  resCode: {
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  rideDate: {
+  infoRowText: {
     fontSize: 12,
+    letterSpacing: 0.5,
     fontWeight: '500',
   },
-  cardBody: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    gap: 12,
-  },
-  rideThumb: {
-    width: 70,
-    height: 48,
-  },
-  carName: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  rideTime: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  fare: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 4,
-  },
   routeBox: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    gap: 6,
+    borderWidth: 1,
+    borderRadius: 2,
+    padding: 10,
+    gap: 8,
   },
   routeItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
   },
   routeText: {
     fontSize: 12,
     flex: 1,
+    lineHeight: 16,
   },
-  emptyContainer: {
+  emptyBox: {
+    borderWidth: 1,
+    borderRadius: 2,
+    padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyIconCircle: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
   },
   emptyTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: 12,
-    marginTop: 4,
     textAlign: 'center',
+    lineHeight: 18,
   },
 })

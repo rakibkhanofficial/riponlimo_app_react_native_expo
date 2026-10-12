@@ -17,6 +17,10 @@ import { Input } from '../common/Input'
 import { Counter } from '../common/Counter'
 import { Button } from '../common/Button'
 import { SegmentedControl, SegmentOption } from '../common/SegmentedControl'
+import { DatePickerModal } from '../common/DatePickerModal'
+import { TimePickerModal } from '../common/TimePickerModal'
+import { MapboxRouteMap } from '../common/MapboxRouteMap'
+import { LocationPickerMapModal } from '../common/LocationPickerMapModal'
 import { TripType } from '../../types'
 
 const TRIP_TYPE_OPTIONS: SegmentOption<TripType>[] = [
@@ -37,9 +41,65 @@ const TRIP_TYPE_OPTIONS: SegmentOption<TripType>[] = [
   },
 ]
 
+interface TriggerFieldProps {
+  label: string
+  value?: string
+  placeholder: string
+  icon: React.ReactNode
+  error?: string
+  onPress: () => void
+  disabled?: boolean
+}
+
+const TriggerField: React.FC<TriggerFieldProps> = ({
+  label,
+  value,
+  placeholder,
+  icon,
+  error,
+  onPress,
+  disabled,
+}) => {
+  const { theme } = useTheme()
+  return (
+    <View style={styles.fieldContainer}>
+      <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>{label.toUpperCase()}</Text>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={onPress}
+        disabled={disabled}
+        style={[
+          styles.fieldButton,
+          {
+            backgroundColor: theme.surface,
+            borderColor: error ? theme.error : theme.border,
+            opacity: disabled ? 0.6 : 1,
+          },
+        ]}
+      >
+        <View style={styles.fieldContent}>
+          <View style={styles.fieldIcon}>{icon}</View>
+          <Text
+            style={[
+              styles.fieldText,
+              { color: value ? theme.textPrimary : theme.textMuted },
+            ]}
+            numberOfLines={1}
+          >
+            {value || placeholder}
+          </Text>
+        </View>
+        <Feather name="chevron-down" size={14} color={theme.textMuted} />
+      </TouchableOpacity>
+      {error ? <Text style={[styles.fieldError, { color: theme.error }]}>{error}</Text> : null}
+    </View>
+  )
+}
+
 export const Step1TripDetails: React.FC = () => {
   const { theme } = useTheme()
   const {
+    cars,
     form,
     updateForm,
     addStop,
@@ -57,6 +117,17 @@ export const Step1TripDetails: React.FC = () => {
   const [showAdditionalContacts, setShowAdditionalContacts] = useState(
     form.additionalContacts.length > 0
   )
+
+  // Custom modal pickers state
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [datePickerTarget, setDatePickerTarget] = useState<'pickupDate' | 'returnDate'>('pickupDate')
+  const [timePickerTarget, setTimePickerTarget] = useState<'pickupTime' | 'hourlyStart' | 'hourlyEnd' | 'returnTime' | null>(null)
+
+  // Mapbox location picker state
+  const [locationPickerTarget, setLocationPickerTarget] = useState<'pickup' | 'drop' | null>(null)
+  const [showRouteMap, setShowRouteMap] = useState(true)
+
+  const selectedCar = cars.find(c => c.id === form.selectedCarId)
 
   const handleTripTypeChange = (type: TripType) => {
     updateForm({ tripType: type })
@@ -79,6 +150,40 @@ export const Step1TripDetails: React.FC = () => {
     }
   }
 
+  const handleDateSelect = (dateStr: string) => {
+    if (datePickerTarget === 'pickupDate') {
+      updateForm({ pickupDate: dateStr })
+    } else {
+      updateForm({ returnDate: dateStr })
+    }
+    setShowDatePicker(false)
+  }
+
+  const handleTimeSelect = (timeStr: string) => {
+    if (timePickerTarget === 'pickupTime') {
+      updateForm({ pickupTime: timeStr })
+    } else if (timePickerTarget === 'hourlyStart') {
+      updateHourlyTimes(timeStr, form.dropTime || '18:00')
+    } else if (timePickerTarget === 'hourlyEnd') {
+      updateHourlyTimes(form.pickupTime || '14:00', timeStr)
+    } else if (timePickerTarget === 'returnTime') {
+      updateForm({ returnTime: timeStr })
+    }
+    setTimePickerTarget(null)
+  }
+
+  const formatDisplayTime = (timeStr?: string) => {
+    if (!timeStr) return ''
+    const parts = timeStr.split(':')
+    if (parts.length < 2) return timeStr
+    const h = parseInt(parts[0], 10)
+    const m = parts[1]
+    if (isNaN(h)) return timeStr
+    const period = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${String(h12).padStart(2, '0')}:${m} ${period}`
+  }
+
   return (
     <ScrollView
       style={styles.container}
@@ -86,6 +191,24 @@ export const Step1TripDetails: React.FC = () => {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      {/* Preselected Car Banner (when arrived from Fleet) */}
+      {selectedCar && (
+        <View style={[styles.preselectedBanner, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
+          <View style={styles.preselectedLeft}>
+            <Text style={[styles.preselectedEyebrow, { color: theme.primary }]}>RESERVING VEHICLE</Text>
+            <Text style={[styles.preselectedCarName, { color: theme.textPrimary }]}>
+              {selectedCar.brand} {selectedCar.model}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => updateForm({ selectedCarId: '' })}
+            style={[styles.preselectedChangeBtn, { borderColor: theme.border }]}
+          >
+            <Text style={[styles.preselectedChangeText, { color: theme.textSecondary }]}>CHANGE</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* 1. Trip Type Selector */}
       <View style={styles.sectionMargin}>
         <SegmentedControl
@@ -113,8 +236,17 @@ export const Step1TripDetails: React.FC = () => {
           ) : undefined
         }
       >
+        <View style={styles.inputHeaderActionRow}>
+          <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>PICKUP LOCATION</Text>
+          <TouchableOpacity
+            onPress={() => setLocationPickerTarget('pickup')}
+            style={[styles.pinMapBtn, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}
+          >
+            <Feather name="map" size={11} color={theme.primary} />
+            <Text style={[styles.pinMapBtnText, { color: theme.primary }]}>PIN ON MAP</Text>
+          </TouchableOpacity>
+        </View>
         <Input
-          label="Pickup Location"
           placeholder="e.g., JFK Airport Terminal 4 or 450 Lexington Ave"
           value={form.pickupLocation}
           onChangeText={text => updateForm({ pickupLocation: text })}
@@ -152,14 +284,37 @@ export const Step1TripDetails: React.FC = () => {
         </TouchableOpacity>
 
         {form.tripType !== 'HOURLY' && (
-          <Input
-            label="Drop-off Location"
-            placeholder="e.g., The Plaza Hotel, 5th Avenue, NYC"
-            value={form.dropLocation}
-            onChangeText={text => updateForm({ dropLocation: text })}
-            leftIcon={<Feather name="map-pin" size={14} color={theme.error} />}
-            error={validationErrors.dropLocation}
-          />
+          <>
+            <View style={styles.inputHeaderActionRow}>
+              <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>DROP-OFF LOCATION</Text>
+              <TouchableOpacity
+                onPress={() => setLocationPickerTarget('drop')}
+                style={[styles.pinMapBtn, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}
+              >
+                <Feather name="map" size={11} color={theme.primary} />
+                <Text style={[styles.pinMapBtnText, { color: theme.primary }]}>PIN ON MAP</Text>
+              </TouchableOpacity>
+            </View>
+            <Input
+              placeholder="e.g., The Plaza Hotel, 5th Avenue, NYC"
+              value={form.dropLocation}
+              onChangeText={text => updateForm({ dropLocation: text })}
+              leftIcon={<Feather name="map-pin" size={14} color={theme.error} />}
+              error={validationErrors.dropLocation}
+            />
+          </>
+        )}
+
+        {/* Live Mapbox Route Preview */}
+        {(form.pickupLocation || form.dropLocation) && (
+          <View style={styles.mapContainerMargin}>
+            <MapboxRouteMap
+              pickupLocation={form.pickupLocation}
+              dropLocation={form.dropLocation}
+              stops={form.stops}
+              height={190}
+            />
+          </View>
         )}
 
         {/* Mileage & Time Single Line Display (strict client requirement) */}
@@ -182,23 +337,26 @@ export const Step1TripDetails: React.FC = () => {
       >
         <View style={styles.twoColumnRow}>
           <View style={{ flex: 1 }}>
-            <Input
+            <TriggerField
               label="Pickup Date"
               placeholder="YYYY-MM-DD"
               value={form.pickupDate}
-              onChangeText={text => updateForm({ pickupDate: text })}
-              leftIcon={<Feather name="calendar" size={14} color={theme.primary} />}
+              icon={<Feather name="calendar" size={14} color={theme.primary} />}
               error={validationErrors.pickupDate}
+              onPress={() => {
+                setDatePickerTarget('pickupDate')
+                setShowDatePicker(true)
+              }}
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Input
+            <TriggerField
               label="Pickup Time"
-              placeholder="HH:mm (e.g. 14:30)"
-              value={form.pickupTime}
-              onChangeText={text => updateForm({ pickupTime: text })}
-              leftIcon={<Feather name="clock" size={14} color={theme.primary} />}
+              placeholder="HH:mm"
+              value={form.pickupTime ? formatDisplayTime(form.pickupTime) : undefined}
+              icon={<Feather name="clock" size={14} color={theme.primary} />}
               error={validationErrors.pickupTime}
+              onPress={() => setTimePickerTarget('pickupTime')}
             />
           </View>
         </View>
@@ -208,22 +366,24 @@ export const Step1TripDetails: React.FC = () => {
           <View style={[styles.hourlyBox, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
             <View style={styles.threeColumnRow}>
               <View style={{ flex: 1 }}>
-                <Input
+                <TriggerField
                   label="Start Time"
                   placeholder="14:00"
-                  value={form.pickupTime}
-                  onChangeText={text => updateHourlyTimes(text, form.dropTime || '18:00')}
+                  value={form.pickupTime ? formatDisplayTime(form.pickupTime) : undefined}
+                  icon={<Feather name="play-circle" size={13} color={theme.primary} />}
+                  onPress={() => setTimePickerTarget('hourlyStart')}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Input
+                <TriggerField
                   label="End Time"
                   placeholder="18:00"
-                  value={form.dropTime}
-                  onChangeText={text => updateHourlyTimes(form.pickupTime, text)}
+                  value={form.dropTime ? formatDisplayTime(form.dropTime) : undefined}
+                  icon={<Feather name="stop-circle" size={13} color={theme.primary} />}
+                  onPress={() => setTimePickerTarget('hourlyEnd')}
                 />
               </View>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 0.9 }}>
                 <Input
                   label="Total Hours"
                   placeholder="4"
@@ -477,21 +637,26 @@ export const Step1TripDetails: React.FC = () => {
           <View style={[styles.returnTripBox, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
             <View style={styles.twoColumnRow}>
               <View style={{ flex: 1 }}>
-                <Input
+                <TriggerField
                   label="Return Date"
                   placeholder="YYYY-MM-DD"
                   value={form.returnDate}
-                  onChangeText={text => updateForm({ returnDate: text })}
+                  icon={<Feather name="calendar" size={14} color={theme.primary} />}
                   error={validationErrors.returnDate}
+                  onPress={() => {
+                    setDatePickerTarget('returnDate')
+                    setShowDatePicker(true)
+                  }}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Input
+                <TriggerField
                   label="Return Time"
                   placeholder="HH:mm"
-                  value={form.returnTime}
-                  onChangeText={text => updateForm({ returnTime: text })}
+                  value={form.returnTime ? formatDisplayTime(form.returnTime) : undefined}
+                  icon={<Feather name="clock" size={14} color={theme.primary} />}
                   error={validationErrors.returnTime}
+                  onPress={() => setTimePickerTarget('returnTime')}
                 />
               </View>
             </View>
@@ -521,6 +686,44 @@ export const Step1TripDetails: React.FC = () => {
           iconRight={<Feather name="arrow-right" size={18} color="#0A0D14" />}
         />
       </View>
+
+      {/* Date Picker Modal */}
+      <DatePickerModal
+        visible={showDatePicker}
+        selectedDate={datePickerTarget === 'pickupDate' ? form.pickupDate : form.returnDate}
+        onSelectDate={handleDateSelect}
+        onClose={() => setShowDatePicker(false)}
+      />
+
+      {/* Time Picker Modal */}
+      <TimePickerModal
+        visible={timePickerTarget !== null}
+        selectedTime={
+          timePickerTarget === 'pickupTime' || timePickerTarget === 'hourlyStart'
+            ? form.pickupTime || '14:00'
+            : timePickerTarget === 'hourlyEnd'
+            ? form.dropTime || '18:00'
+            : form.returnTime || '16:00'
+        }
+        onSelectTime={handleTimeSelect}
+        onClose={() => setTimePickerTarget(null)}
+      />
+
+      {/* Location Picker Mapbox Modal */}
+      <LocationPickerMapModal
+        visible={locationPickerTarget !== null}
+        title={locationPickerTarget === 'pickup' ? 'SET PICKUP PIN' : 'SET DROP-OFF PIN'}
+        initialLocationName={locationPickerTarget === 'pickup' ? form.pickupLocation : form.dropLocation}
+        onConfirmLocation={(address) => {
+          if (locationPickerTarget === 'pickup') {
+            updateForm({ pickupLocation: address })
+          } else if (locationPickerTarget === 'drop') {
+            updateForm({ dropLocation: address })
+          }
+          setLocationPickerTarget(null)
+        }}
+        onClose={() => setLocationPickerTarget(null)}
+      />
     </ScrollView>
   )
 }
@@ -671,5 +874,103 @@ const styles = StyleSheet.create({
   nextButtonWrapper: {
     marginTop: 16,
     marginBottom: 20,
+  },
+  preselectedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 2,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  preselectedLeft: {
+    flex: 1,
+  },
+  preselectedEyebrow: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  preselectedCarName: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
+  preselectedChangeBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 2,
+    borderWidth: 1,
+  },
+  preselectedChangeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  fieldContainer: {
+    marginBottom: 12,
+  },
+  fieldLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  fieldButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    height: 48,
+    borderRadius: 2,
+    borderWidth: 1,
+  },
+  fieldContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 10,
+  },
+  fieldIcon: {
+    width: 18,
+    alignItems: 'center',
+  },
+  fieldText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  fieldError: {
+    fontSize: 11,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  inputHeaderActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+    marginTop: 4,
+  },
+  pinMapBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 2,
+    borderWidth: 1,
+  },
+  pinMapBtnText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  mapContainerMargin: {
+    marginVertical: 10,
   },
 })

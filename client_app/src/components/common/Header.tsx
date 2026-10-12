@@ -1,7 +1,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native'
-import { Ionicons, Feather } from '@expo/vector-icons'
+import { Feather, Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../../theme/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
 
@@ -12,54 +13,86 @@ interface HeaderProps {
   showBack?: boolean
   onBack?: () => void
   onProfilePress?: () => void
+  transparent?: boolean
+  isScrolled?: boolean
 }
 
 export const Header: React.FC<HeaderProps> = ({
   title = 'RIPON LIMO',
-  subtitle = 'EXECUTIVE CHAUFFEUR SERVICE',
+  subtitle,
   showThemeToggle = true,
   showBack = false,
   onBack,
   onProfilePress,
+  transparent = false,
+  isScrolled = false,
 }) => {
   const { theme, isDark, toggleTheme } = useTheme()
   const { user, isAuthenticated } = useAuth()
+  const insets = useSafeAreaInsets()
+
+  const isTransparentActive = transparent && !isScrolled
 
   const handleThemeToggle = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    } catch {
+      // ignore
+    }
     toggleTheme()
   }
 
   const handleProfile = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    } catch {
+      // ignore
+    }
     if (onProfilePress) onProfilePress()
   }
 
+  // Dynamic styling colors based on whether header is floating transparent over dark hero
+  const brandTitleColor = isTransparentActive ? '#FFFFFF' : theme.textPrimary
+  const brandFadedColor = isTransparentActive ? 'rgba(255,255,255,0.55)' : undefined
+  const subtitleColor = isTransparentActive ? 'rgba(255,255,255,0.75)' : theme.textMuted
+  const buttonBg = isTransparentActive ? 'rgba(0,0,0,0.45)' : theme.surface
+  const buttonBorder = isTransparentActive ? 'rgba(255,255,255,0.3)' : theme.border
+  const iconColor = isTransparentActive ? '#FFFFFF' : theme.textPrimary
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.background, borderBottomColor: theme.borderSubtle }]}>
+    <View
+      style={[
+        styles.container,
+        transparent ? styles.transparentContainer : styles.solidContainer,
+        {
+          paddingTop: transparent
+            ? insets.top + (Platform.OS === 'ios' ? 4 : 8)
+            : Platform.OS === 'ios' ? 8 : 12,
+          backgroundColor: isTransparentActive ? 'transparent' : theme.background,
+          borderBottomColor: isTransparentActive ? 'transparent' : theme.border,
+          borderBottomWidth: isTransparentActive ? 0 : 1,
+        },
+      ]}
+    >
       <View style={styles.leftRow}>
         {showBack ? (
-          <TouchableOpacity onPress={onBack} style={[styles.iconButton, { backgroundColor: theme.surface }]}>
-            <Feather name="arrow-left" size={20} color={theme.textPrimary} />
+          <TouchableOpacity
+            onPress={onBack}
+            style={[styles.iconButton, { borderColor: buttonBorder, backgroundColor: buttonBg }]}
+          >
+            <Feather name="arrow-left" size={18} color={iconColor} />
           </TouchableOpacity>
-        ) : (
-          <View style={[styles.logoBadge, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]}>
-            <Text style={[styles.logoLetter, { color: theme.primary }]}>R</Text>
-          </View>
-        )}
-        <View style={styles.titleContainer}>
-          <Text style={[styles.brandTitle, { color: theme.textPrimary }]}>
-            {title.includes('RIPON') ? (
-              <>
-                RIPON <Text style={{ color: theme.primary }}>LIMO</Text>
-              </>
-            ) : (
-              title
-            )}
+        ) : null}
+
+        <View style={styles.brandBox}>
+          <Text style={[styles.brandTitle, { color: brandTitleColor }]}>
+            RIPON <Text style={[styles.brandTitleFaded, brandFadedColor ? { color: brandFadedColor, opacity: 1 } : null]}>LIMO</Text>
           </Text>
-          {subtitle ? (
-            <Text style={[styles.subtitle, { color: theme.textMuted }]}>{subtitle}</Text>
-          ) : null}
+          {subtitle && (
+            <Text style={[styles.brandSubtitle, { color: subtitleColor }]}>
+              {subtitle}
+            </Text>
+          )}
         </View>
       </View>
 
@@ -67,36 +100,32 @@ export const Header: React.FC<HeaderProps> = ({
         {showThemeToggle && (
           <TouchableOpacity
             onPress={handleThemeToggle}
-            accessibilityLabel="Toggle Theme"
-            style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            style={[styles.iconButton, { borderColor: buttonBorder, backgroundColor: buttonBg }]}
+            activeOpacity={0.7}
           >
             <Ionicons
               name={isDark ? 'sunny-outline' : 'moon-outline'}
-              size={18}
-              color={theme.primary}
+              size={16}
+              color={iconColor}
             />
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          onPress={handleProfile}
-          accessibilityLabel="User Profile"
-          style={[
-            styles.profileButton,
-            {
-              backgroundColor: isAuthenticated ? theme.primaryLight : theme.surface,
-              borderColor: isAuthenticated ? theme.primary : theme.border,
-            },
-          ]}
-        >
-          {isAuthenticated && user?.name ? (
-            <Text style={[styles.userInitial, { color: theme.primary }]}>
-              {user.name.charAt(0).toUpperCase()}
-            </Text>
-          ) : (
-            <Feather name="user" size={17} color={isAuthenticated ? theme.primary : theme.textMuted} />
-          )}
-        </TouchableOpacity>
+        {onProfilePress && (
+          <TouchableOpacity
+            onPress={handleProfile}
+            style={[
+              styles.profileButton,
+              { borderColor: buttonBorder, backgroundColor: buttonBg },
+            ]}
+            activeOpacity={0.7}
+          >
+            <Feather name="user" size={16} color={iconColor} />
+            {isAuthenticated && user && (
+              <View style={[styles.onlineDot, { backgroundColor: theme.accent }]} />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   )
@@ -104,71 +133,75 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 12 : 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  transparentContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  solidContainer: {
+    position: 'relative',
   },
   leftRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
-  logoBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoLetter: {
-    fontSize: 18,
-    fontWeight: '800',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-  },
-  titleContainer: {
-    justifyContent: 'center',
+  brandBox: {
+    flexDirection: 'column',
   },
   brandTitle: {
     fontSize: 16,
     fontWeight: '800',
-    letterSpacing: 2.5,
-    fontFamily: Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif-medium',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
   },
-  subtitle: {
+  brandTitleFaded: {
+    opacity: 0.45,
+  },
+  brandSubtitle: {
     fontSize: 9,
     fontWeight: '600',
-    letterSpacing: 1.5,
-    marginTop: 2,
+    letterSpacing: 1,
     textTransform: 'uppercase',
+    marginTop: 2,
   },
   rightRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 2,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   profileButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 2,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
-  userInitial: {
-    fontSize: 14,
-    fontWeight: '700',
+  onlineDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 })

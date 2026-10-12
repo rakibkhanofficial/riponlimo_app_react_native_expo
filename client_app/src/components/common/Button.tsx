@@ -9,7 +9,6 @@ import {
   StyleProp,
   View,
 } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../../theme/ThemeContext'
 
@@ -42,14 +41,22 @@ export const Button: React.FC<ButtonProps> = ({
 
   const handlePress = () => {
     if (disabled || loading) return
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    } catch {
+      // ignore
+    }
     onPress()
   }
 
-  const isPrimary = variant === 'primary'
-
   const getContainerStyle = (): ViewStyle => {
     switch (variant) {
+      case 'primary':
+        return {
+          backgroundColor: theme.primary,
+          borderWidth: 1,
+          borderColor: theme.primary,
+        }
       case 'secondary':
         return {
           backgroundColor: theme.surfaceSubtle,
@@ -59,16 +66,19 @@ export const Button: React.FC<ButtonProps> = ({
       case 'outline':
         return {
           backgroundColor: 'transparent',
-          borderColor: theme.primary,
-          borderWidth: 1.5,
+          borderColor: theme.border,
+          borderWidth: 1,
         }
       case 'danger':
         return {
           backgroundColor: theme.error,
+          borderColor: theme.error,
+          borderWidth: 1,
         }
       case 'ghost':
         return {
           backgroundColor: 'transparent',
+          borderColor: 'transparent',
         }
       default:
         return {}
@@ -78,112 +88,92 @@ export const Button: React.FC<ButtonProps> = ({
   const getTextColor = (): string => {
     switch (variant) {
       case 'primary':
-        return '#0A0D14' // rich black text on gold gradient
+        return theme.textInverse // Rich black in dark theme, pure white in light theme
       case 'secondary':
         return theme.textPrimary
       case 'outline':
-        return theme.primary
+        return theme.textPrimary
       case 'danger':
         return '#FFFFFF'
       case 'ghost':
-        return theme.primary
+        return theme.textPrimary
+      default:
+        return theme.textPrimary
     }
   }
 
   const getSizeStyle = (): ViewStyle => {
     switch (size) {
       case 'sm':
-        return { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 10 }
+        return { paddingVertical: 10, paddingHorizontal: 16 }
       case 'lg':
-        return { paddingVertical: 16, paddingHorizontal: 24, borderRadius: 14 }
+        return { paddingVertical: 18, paddingHorizontal: 28 }
       default:
-        return { paddingVertical: 12, paddingHorizontal: 18, borderRadius: 12 }
+        return { paddingVertical: 14, paddingHorizontal: 22 }
     }
   }
 
-  const getFontSize = (): number => {
+  const getTextSizeStyle = (): TextStyle => {
     switch (size) {
       case 'sm':
-        return 12
+        return { fontSize: 11, letterSpacing: 1.5 }
       case 'lg':
-        return 15
+        return { fontSize: 13, letterSpacing: 2 }
       default:
-        return 13.5
+        return { fontSize: 12, letterSpacing: 1.8 }
     }
-  }
-
-  const content = (
-    <View style={styles.contentRow}>
-      {loading ? (
-        <ActivityIndicator size="small" color={getTextColor()} />
-      ) : (
-        <>
-          {icon && <View style={styles.iconLeft}>{icon}</View>}
-          <Text
-            style={[
-              styles.text,
-              {
-                color: getTextColor(),
-                fontSize: getFontSize(),
-              },
-              textStyle,
-            ]}
-          >
-            {title}
-          </Text>
-          {iconRight && <View style={styles.iconRight}>{iconRight}</View>}
-        </>
-      )}
-    </View>
-  )
-
-  if (isPrimary && !disabled) {
-    return (
-      <TouchableOpacity
-        onPress={handlePress}
-        disabled={disabled || loading}
-        activeOpacity={0.85}
-        style={[styles.base, getSizeStyle(), { opacity: disabled ? 0.5 : 1 }, style]}
-      >
-        <LinearGradient
-          colors={theme.primaryGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[StyleSheet.absoluteFill, getSizeStyle()]}
-        />
-        {content}
-      </TouchableOpacity>
-    )
   }
 
   return (
     <TouchableOpacity
       onPress={handlePress}
       disabled={disabled || loading}
-      activeOpacity={0.7}
+      activeOpacity={0.8}
       style={[
-        styles.base,
-        getSizeStyle(),
+        styles.baseButton,
+        { borderRadius: theme.buttonRadius },
         getContainerStyle(),
-        { opacity: disabled ? 0.5 : 1 },
+        getSizeStyle(),
+        disabled && styles.disabled,
         style,
       ]}
     >
-      {content}
+      {loading ? (
+        <ActivityIndicator color={getTextColor()} size="small" />
+      ) : (
+        <View style={styles.contentRow}>
+          {icon && <View style={styles.iconLeft}>{icon}</View>}
+          <Text
+            style={[
+              styles.text,
+              getTextSizeStyle(),
+              { color: getTextColor() },
+              textStyle,
+            ]}
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+          {iconRight && <View style={styles.iconRight}>{iconRight}</View>}
+        </View>
+      )}
     </TouchableOpacity>
   )
 }
 
 const styles = StyleSheet.create({
-  base: {
+  baseButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  text: {
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   iconLeft: {
     marginRight: 8,
@@ -191,9 +181,7 @@ const styles = StyleSheet.create({
   iconRight: {
     marginLeft: 8,
   },
-  text: {
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
+  disabled: {
+    opacity: 0.4,
   },
 })

@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   thumbnailBtn: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 2,
     borderWidth: 1.5,
     padding: 4,
     alignItems: 'center',
@@ -254,11 +254,13 @@ const styles = StyleSheet.create({
   thumbnailImg: {
     width: '100%',
     height: 50,
-    borderRadius: 6,
+    borderRadius: 2,
   },
   thumbnailLabel: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
     marginTop: 4,
   },
   capacitiesRow: {
@@ -269,7 +271,7 @@ const styles = StyleSheet.create({
   capacityCard: {
     flex: 1,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 2,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -284,14 +286,14 @@ const styles = StyleSheet.create({
   },
   sectionBox: {
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 2,
     borderWidth: 1,
     marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 10,
   },
@@ -315,18 +317,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 2,
     borderWidth: 1,
     marginBottom: 20,
   },
   priceLabel: {
-    fontSize: 11,
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: '700',
   },
   priceAmount: {
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '300',
+    letterSpacing: 1,
     marginTop: 2,
   },
   footer: {

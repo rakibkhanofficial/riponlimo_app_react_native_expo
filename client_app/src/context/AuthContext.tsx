@@ -8,6 +8,14 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<User>
+  loginWithGoogle: (payload: {
+    idToken?: string
+    accessToken?: string
+    email?: string
+    name?: string
+    image?: string
+    googleId?: string
+  }) => Promise<User>
   register: (name: string, email: string, password: string, phone?: string) => Promise<User>
   logout: () => Promise<void>
   updateUser: (data: Partial<User>) => Promise<void>
@@ -20,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => { throw new Error('Not implemented') },
+  loginWithGoogle: async () => { throw new Error('Not implemented') },
   register: async () => { throw new Error('Not implemented') },
   logout: async () => {},
   updateUser: async () => {},
@@ -53,6 +62,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res.user
   }
 
+  const loginWithGoogle = async (payload: {
+    idToken?: string
+    accessToken?: string
+    email?: string
+    name?: string
+    image?: string
+    googleId?: string
+  }): Promise<User> => {
+    const res = await api.loginWithGoogle(payload)
+    setUser(res.user)
+    await AsyncStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(res.user))
+    return res.user
+  }
+
   const register = async (name: string, email: string, password: string, phone?: string): Promise<User> => {
     const res = await api.register(name, email, password, phone)
     setUser(res.user)
@@ -79,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithGoogle,
         register,
         logout,
         updateUser,

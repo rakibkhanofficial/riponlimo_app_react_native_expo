@@ -55,7 +55,7 @@ export const Badge: React.FC<BadgeProps> = ({
 
 const styles = StyleSheet.create({
   badge: {
-    borderRadius: 8,
+    borderRadius: 2,
     borderWidth: 1,
     alignSelf: 'flex-start',
     justifyContent: 'center',

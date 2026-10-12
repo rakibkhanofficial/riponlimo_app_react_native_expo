@@ -6,16 +6,20 @@ export interface ThemeColors {
   card: string
   cardBorder: string
   cardBorderHighlight: string
+  text: string // convenience alias for textPrimary
   textPrimary: string
   textSecondary: string
   textMuted: string
   textInverse: string
-  primary: string // Gold/Brass luxury accent
+  buttonText: string // convenience alias for textInverse (Black on White button)
+  primary: string // Web monochrome primary (White in dark, Black in light)
   primaryHover: string
   primaryLight: string
   primaryGradient: [string, string]
   darkGradient: [string, string]
-  accent: string
+  accent: string // Luxury green badge as on web (#25D366)
+  accentGreen: string // convenience alias for accent (#25D366)
+  gold: string
   border: string
   borderSubtle: string
   inputBackground: string
@@ -29,70 +33,85 @@ export interface ThemeColors {
   tabBarBackground: string
   tabBarBorder: string
   badgeBackground: string
+  buttonRadius: number
+  cardRadius: number
 }
 
+// Pure Monochrome Palette matching Web Ripon Limo
 export const darkTheme: ThemeColors = {
   isDark: true,
-  background: '#0B0E14',
-  surface: '#121722',
-  surfaceSubtle: '#181E2C',
-  card: '#141A26',
-  cardBorder: '#232B3C',
-  cardBorderHighlight: '#D4AF37',
+  background: '#000000', // Pure Pitch Black
+  surface: '#0A0A0A',
+  surfaceSubtle: '#141414',
+  card: '#0D0D0D',
+  cardBorder: '#222222',
+  cardBorderHighlight: '#FFFFFF',
+  text: '#FFFFFF',
   textPrimary: '#FFFFFF',
-  textSecondary: '#E2E8F0',
-  textMuted: '#94A3B8',
-  textInverse: '#0B0E14',
-  primary: '#D4AF37', // Refined Chauffeur Champagne Gold
-  primaryHover: '#C5A030',
-  primaryLight: 'rgba(212, 175, 55, 0.15)',
-  primaryGradient: ['#E6C25B', '#C59E28'],
-  darkGradient: ['#141A26', '#0B0E14'],
-  accent: '#E5C365',
-  border: '#232B3C',
-  borderSubtle: '#1B2230',
-  inputBackground: '#10141D',
-  inputBorder: '#283244',
+  textSecondary: '#D4D4D8',
+  textMuted: '#71717A',
+  textInverse: '#000000',
+  buttonText: '#000000',
+  primary: '#FFFFFF', // Clean Crisp White (Button bg)
+  primaryHover: '#E4E4E7',
+  primaryLight: 'rgba(255, 255, 255, 0.12)',
+  primaryGradient: ['#FFFFFF', '#E4E4E7'],
+  darkGradient: ['#121212', '#000000'],
+  accent: '#25D366', // Web featuring green accent
+  accentGreen: '#25D366',
+  gold: '#FFFFFF', // Remove yellow; pure crisp monochrome
+  border: '#222222',
+  borderSubtle: '#181818',
+  inputBackground: '#080808',
+  inputBorder: '#262626',
   error: '#EF4444',
-  errorBackground: 'rgba(239, 68, 68, 0.12)',
+  errorBackground: 'rgba(239, 68, 68, 0.15)',
   success: '#10B981',
-  successBackground: 'rgba(16, 185, 129, 0.12)',
+  successBackground: 'rgba(16, 185, 129, 0.15)',
   warning: '#F59E0B',
-  warningBackground: 'rgba(245, 158, 11, 0.12)',
-  tabBarBackground: '#0F131C',
-  tabBarBorder: '#1E2534',
-  badgeBackground: 'rgba(212, 175, 55, 0.12)',
+  warningBackground: 'rgba(245, 158, 11, 0.15)',
+  tabBarBackground: '#000000',
+  tabBarBorder: '#1F1F1F',
+  badgeBackground: 'rgba(255, 255, 255, 0.1)',
+  buttonRadius: 2, // Sharp architectural web shape
+  cardRadius: 4,
 }
 
 export const lightTheme: ThemeColors = {
   isDark: false,
-  background: '#F8FAFC',
-  surface: '#FFFFFF',
-  surfaceSubtle: '#F1F5F9',
+  background: '#FFFFFF',
+  surface: '#F8F9FA',
+  surfaceSubtle: '#F1F3F5',
   card: '#FFFFFF',
-  cardBorder: '#E2E8F0',
-  cardBorderHighlight: '#B89025',
-  textPrimary: '#0F172A',
-  textSecondary: '#334155',
-  textMuted: '#64748B',
+  cardBorder: '#E5E7EB',
+  cardBorderHighlight: '#000000',
+  text: '#000000',
+  textPrimary: '#000000',
+  textSecondary: '#374151',
+  textMuted: '#6B7280',
   textInverse: '#FFFFFF',
-  primary: '#B89025', // Rich Warm Amber-Gold on light backgrounds
-  primaryHover: '#9A771C',
-  primaryLight: 'rgba(184, 144, 37, 0.12)',
-  primaryGradient: ['#CFA93E', '#B89025'],
-  darkGradient: ['#FFFFFF', '#F8FAFC'],
-  accent: '#A37C18',
-  border: '#E2E8F0',
-  borderSubtle: '#F1F5F9',
-  inputBackground: '#F8FAFC',
-  inputBorder: '#CBD5E1',
+  buttonText: '#FFFFFF',
+  primary: '#000000', // Clean Solid Black (Button bg)
+  primaryHover: '#1F2937',
+  primaryLight: 'rgba(0, 0, 0, 0.08)',
+  primaryGradient: ['#000000', '#1F2937'],
+  darkGradient: ['#F8F9FA', '#E5E7EB'],
+  accent: '#16A34A',
+  accentGreen: '#16A34A',
+  gold: '#000000',
+  border: '#E5E7EB',
+  borderSubtle: '#F3F4F6',
+  inputBackground: '#F9FAFB',
+  inputBorder: '#D1D5DB',
   error: '#DC2626',
-  errorBackground: '#FEE2E2',
+  errorBackground: 'rgba(220, 38, 38, 0.1)',
   success: '#059669',
-  successBackground: '#D1FAE5',
+  successBackground: 'rgba(5, 150, 105, 0.1)',
   warning: '#D97706',
-  warningBackground: '#FEF3C7',
+  warningBackground: 'rgba(217, 119, 6, 0.1)',
   tabBarBackground: '#FFFFFF',
-  tabBarBorder: '#E2E8F0',
-  badgeBackground: 'rgba(184, 144, 37, 0.1)',
+  tabBarBorder: '#E5E7EB',
+  badgeBackground: 'rgba(0, 0, 0, 0.06)',
+  buttonRadius: 2,
+  cardRadius: 4,
 }

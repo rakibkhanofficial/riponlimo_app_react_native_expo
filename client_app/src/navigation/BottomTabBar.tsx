@@ -10,7 +10,7 @@ import { Feather, Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeContext'
 
-export type TabKey = 'book' | 'fleet' | 'rides' | 'profile'
+export type TabKey = 'home' | 'book' | 'fleet' | 'rides' | 'profile'
 
 interface BottomTabBarProps {
   activeTab: TabKey
@@ -24,7 +24,8 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   const { theme } = useTheme()
 
   const tabs: { key: TabKey; label: string; icon: any; iconType: 'feather' | 'ionicons' }[] = [
-    { key: 'book', label: 'Book', icon: 'navigation', iconType: 'feather' },
+    { key: 'home', label: 'Home', icon: 'home', iconType: 'feather' },
+    { key: 'book', label: 'Reserve', icon: 'compass', iconType: 'feather' },
     { key: 'fleet', label: 'Fleet', icon: 'grid', iconType: 'feather' },
     { key: 'rides', label: 'My Rides', icon: 'clock', iconType: 'feather' },
     { key: 'profile', label: 'Account', icon: 'user', iconType: 'feather' },

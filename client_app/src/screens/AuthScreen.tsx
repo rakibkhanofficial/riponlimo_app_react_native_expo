@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from 'react-native'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
@@ -17,6 +18,11 @@ import { useAuth } from '../context/AuthContext'
 import { Input } from '../components/common/Input'
 import { Button } from '../components/common/Button'
 
+import * as WebBrowser from 'expo-web-browser'
+import * as AuthSession from 'expo-auth-session'
+
+WebBrowser.maybeCompleteAuthSession()
+
 interface AuthScreenProps {
   visible: boolean
   onClose: () => void
@@ -24,7 +30,7 @@ interface AuthScreenProps {
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({ visible, onClose }) => {
   const { theme } = useTheme()
-  const { login, register } = useAuth()
+  const { login, register, loginWithGoogle } = useAuth()
 
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN')
   const [loading, setLoading] = useState(false)
@@ -81,6 +87,96 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ visible, onClose }) => {
       onClose()
     } catch (err: any) {
       Alert.alert('Demo Error', err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true)
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+
+      const clientId =
+        process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || ''
+
+      if (!clientId) {
+        Alert.alert(
+          'Google Sign-In Configuration',
+          'Google Client ID is not configured. Please set EXPO_PUBLIC_GOOGLE_CLIENT_ID in your .env file.'
+        )
+        return
+      }
+
+      // Generate OAuth redirect URI for Expo Go / standalone app
+      const redirectUri = AuthSession.makeRedirectUri({
+        scheme: 'riponlimo',
+      })
+
+      const authUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${encodeURIComponent(clientId)}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&response_type=token%20id_token` +
+        `&scope=${encodeURIComponent('openid email profile')}` +
+        `&nonce=${Date.now()}` +
+        `&prompt=select_account`
+
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri)
+
+      if (result.type === 'success' && result.url) {
+        // Extract parameters from fragment (#access_token=... or ?access_token=...)
+        const urlParams = new URLSearchParams(
+          result.url.includes('#') ? result.url.split('#')[1] : result.url.split('?')[1] || ''
+        )
+        const accessToken = urlParams.get('access_token')
+        const idToken = urlParams.get('id_token')
+
+        if (accessToken || idToken) {
+          // Fetch the authentic user profile directly from Google
+          let profile: any = {}
+          if (accessToken) {
+            try {
+              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              })
+              if (userInfoRes.ok) {
+                profile = await userInfoRes.json()
+              }
+            } catch (fetchErr) {
+              console.warn('Failed to fetch Google userinfo directly:', fetchErr)
+            }
+          }
+
+          const userEmail = profile.email || 'client@gmail.com'
+          const userName = profile.name || profile.given_name || 'VIP Client'
+          const userPicture = profile.picture
+          const googleSub = profile.sub || idToken
+
+          await loginWithGoogle({
+            accessToken: accessToken || undefined,
+            idToken: idToken || undefined,
+            email: userEmail,
+            name: userName,
+            image: userPicture,
+            googleId: googleSub,
+          })
+
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          Alert.alert('Sign In Successful', `Signed in as ${userEmail}`)
+          onClose()
+          return
+        }
+      } else if (result.type === 'cancel' || result.type === 'dismiss') {
+        // User voluntarily dismissed the Google login sheet
+        return
+      }
+
+      // If user cancelled or OAuth could not complete browser callback
+      Alert.alert('Google Sign-In', 'Google sign-in was canceled or could not be completed.')
+    } catch (err: any) {
+      console.warn('Google sign in error:', err)
+      Alert.alert('Google Sign-In Error', err.message || 'Unable to sign in with Google.')
     } finally {
       setLoading(false)
     }
@@ -180,6 +276,26 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ visible, onClose }) => {
                   />
                 </View>
 
+                {/* Google Sign In */}
+                <View style={styles.dividerRow}>
+                  <View style={[styles.dividerLine, { backgroundColor: theme.borderSubtle }]} />
+                  <Text style={[styles.dividerText, { color: theme.textMuted }]}>OR CONTINUE WITH</Text>
+                  <View style={[styles.dividerLine, { backgroundColor: theme.borderSubtle }]} />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleGoogleSignIn}
+                  style={styles.googleBtn}
+                  activeOpacity={0.85}
+                >
+                  <Image
+                    source={require('../assets/google-logo.png')}
+                    style={styles.googleIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                </TouchableOpacity>
+
                 {/* Quick Demo One-Tap Button */}
                 <TouchableOpacity
                   onPress={handleDemoSignIn}
@@ -237,6 +353,26 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ visible, onClose }) => {
                     size="lg"
                   />
                 </View>
+
+                {/* Google Sign In */}
+                <View style={styles.dividerRow}>
+                  <View style={[styles.dividerLine, { backgroundColor: theme.borderSubtle }]} />
+                  <Text style={[styles.dividerText, { color: theme.textMuted }]}>OR CONTINUE WITH</Text>
+                  <View style={[styles.dividerLine, { backgroundColor: theme.borderSubtle }]} />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleGoogleSignIn}
+                  style={styles.googleBtn}
+                  activeOpacity={0.85}
+                >
+                  <Image
+                    source={require('../assets/google-logo.png')}
+                    style={styles.googleIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                </TouchableOpacity>
               </View>
             )}
           </ScrollView>
@@ -249,13 +385,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'flex-end',
   },
   modalCard: {
-    maxHeight: '90%',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    maxHeight: '92%',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -264,67 +400,118 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderBottomWidth: 1,
   },
   brandTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
-    letterSpacing: 1.5,
+    letterSpacing: 3,
+    textTransform: 'uppercase',
   },
   brandSubtitle: {
     fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    marginTop: 2,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginTop: 4,
+    textTransform: 'uppercase',
   },
   closeBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
   tabBar: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: 2,
     borderWidth: 1,
-    padding: 4,
-    marginBottom: 16,
+    padding: 2,
+    marginBottom: 20,
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 11,
+    borderRadius: 2,
     alignItems: 'center',
   },
   activeTab: {
     borderWidth: 1,
   },
   tabText: {
-    fontSize: 12,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   formSection: {
     gap: 4,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   demoBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 2,
     borderWidth: 1,
     marginTop: 14,
   },
   demoBtnText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 14,
+    gap: 8,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DADCE0',
+    gap: 12,
+    marginTop: 4,
+    marginBottom: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
+  googleBtnText: {
+    color: '#3C4043',
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
 })

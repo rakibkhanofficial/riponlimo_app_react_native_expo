@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   Platform,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeContext'
 import { useBooking } from '../context/BookingContext'
 import { Header } from '../components/common/Header'

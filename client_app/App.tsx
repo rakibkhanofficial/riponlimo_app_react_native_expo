@@ -4,18 +4,40 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext'
 import { AuthProvider } from './src/context/AuthContext'
 import { BookingProvider, useBooking } from './src/context/BookingContext'
+import { HomeScreen } from './src/screens/HomeScreen'
 import { BookingScreen } from './src/screens/BookingScreen'
 import { FleetScreen } from './src/screens/FleetScreen'
 import { MyRidesScreen } from './src/screens/MyRidesScreen'
 import { ProfileScreen } from './src/screens/ProfileScreen'
 import { BottomTabBar, TabKey } from './src/navigation/BottomTabBar'
 import { AuthScreen } from './src/screens/AuthScreen'
+import { TripType } from './src/types'
 
 const MainApp: React.FC = () => {
   const { theme } = useTheme()
   const { updateForm, setStep } = useBooking()
-  const [activeTab, setActiveTab] = useState<TabKey>('book')
+  const [activeTab, setActiveTab] = useState<TabKey>('home')
   const [showAuthModal, setShowAuthModal] = useState(false)
+
+  const handleNavigateToBookFromHome = (prefill?: {
+    carId?: string
+    tripType?: TripType
+    pickupLocation?: string
+    dropLocation?: string
+  }) => {
+    if (prefill) {
+      updateForm({
+        ...(prefill.carId ? { selectedCarId: prefill.carId } : {}),
+        ...(prefill.tripType ? { tripType: prefill.tripType } : {}),
+        ...(prefill.pickupLocation ? { pickupLocation: prefill.pickupLocation } : {}),
+        ...(prefill.dropLocation ? { dropLocation: prefill.dropLocation } : {}),
+      })
+      if (prefill.carId) {
+        setStep(1)
+      }
+    }
+    setActiveTab('book')
+  }
 
   const handleSelectCarFromFleet = (carId: string) => {
     updateForm({ selectedCarId: carId })
@@ -26,6 +48,14 @@ const MainApp: React.FC = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
+        {activeTab === 'home' && (
+          <HomeScreen
+            onNavigateToBook={handleNavigateToBookFromHome}
+            onNavigateToFleet={() => setActiveTab('fleet')}
+            onNavigateToRides={() => setActiveTab('rides')}
+            onOpenAuth={() => setShowAuthModal(true)}
+          />
+        )}
         {activeTab === 'book' && (
           <BookingScreen
             onNavigateToRides={() => setActiveTab('rides')}

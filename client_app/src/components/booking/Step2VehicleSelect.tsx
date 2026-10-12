@@ -79,12 +79,12 @@ export const Step2VehicleSelect: React.FC = () => {
                 style={[
                   styles.categoryText,
                   {
-                    color: isSelected ? '#0A0D14' : theme.textPrimary,
+                    color: isSelected ? theme.buttonText : theme.textPrimary,
                     fontWeight: isSelected ? '700' : '500',
                   },
                 ]}
               >
-                {cat === 'ALL' ? 'All Vehicles' : cat}
+                {cat === 'ALL' ? 'ALL VEHICLES' : cat.toUpperCase()}
               </Text>
             </TouchableOpacity>
           )
@@ -120,11 +120,11 @@ export const Step2VehicleSelect: React.FC = () => {
               />
               {isSelected ? (
                 <View style={[styles.selectedBadge, { backgroundColor: theme.primary }]}>
-                  <Feather name="check" size={12} color="#0A0D14" />
-                  <Text style={styles.selectedBadgeText}>Selected</Text>
+                  <Feather name="check" size={12} color={theme.buttonText} />
+                  <Text style={[styles.selectedBadgeText, { color: theme.buttonText }]}>SELECTED</Text>
                 </View>
               ) : (
-                <Text style={[styles.tapToSelect, { color: theme.textMuted }]}>Tap to select</Text>
+                <Text style={[styles.tapToSelect, { color: theme.textMuted }]}>TAP TO SELECT</Text>
               )}
             </View>
 
@@ -234,15 +234,17 @@ const styles = StyleSheet.create({
   categoryPill: {
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: 2,
     borderWidth: 1,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   vehicleCard: {
-    borderRadius: 16,
-    borderWidth: 1.5,
+    borderRadius: 4,
+    borderWidth: 1,
     marginBottom: 14,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 4 },
@@ -263,16 +265,18 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 2,
   },
   selectedBadgeText: {
-    color: '#0A0D14',
     fontSize: 10,
     fontWeight: '700',
+    letterSpacing: 1,
     textTransform: 'uppercase',
   },
   tapToSelect: {
-    fontSize: 11,
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   titleRow: {
     paddingHorizontal: 16,
@@ -281,19 +285,21 @@ const styles = StyleSheet.create({
   brand: {
     fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
   model: {
     fontSize: 17,
     fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
     marginTop: 2,
   },
   imageContainer: {
     height: 140,
     marginHorizontal: 16,
     marginVertical: 10,
-    borderRadius: 12,
+    borderRadius: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },

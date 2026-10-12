@@ -17,6 +17,7 @@ import { Card } from '../common/Card'
 import { Input } from '../common/Input'
 import { Button } from '../common/Button'
 import { Badge } from '../common/Badge'
+import { MapboxRouteMap } from '../common/MapboxRouteMap'
 import { resolveCarImage } from '../../assets/carImages'
 import { PaymentMethod } from '../../types'
 
@@ -40,6 +41,22 @@ export const Step3Checkout: React.FC<Step3CheckoutProps> = ({ onBookingSuccess }
   } = useBooking()
 
   const [agreedToTerms, setAgreedToTerms] = useState(true)
+
+  // Stripe card fields
+  const [cardName, setCardName] = useState(form.fullName || 'VIP Client')
+  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242')
+  const [cardExpiry, setCardExpiry] = useState('12/28')
+  const [cardCvc, setCardCvc] = useState('123')
+  const [cardZip, setCardZip] = useState('10001')
+
+  const handleFillTestCard = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    setCardNumber('4242 4242 4242 4242')
+    setCardExpiry('12/28')
+    setCardCvc('123')
+    setCardZip('10001')
+    setCardName(form.fullName || 'VIP Client')
+  }
 
   const handleConfirmBooking = async () => {
     if (!agreedToTerms) {
@@ -154,6 +171,18 @@ export const Step3Checkout: React.FC<Step3CheckoutProps> = ({ onBookingSuccess }
             </View>
           )}
         </View>
+
+        {/* Route Preview on Mapbox */}
+        {(form.pickupLocation || form.dropLocation) && (
+          <View style={{ marginTop: 12 }}>
+            <MapboxRouteMap
+              pickupLocation={form.pickupLocation}
+              dropLocation={form.dropLocation}
+              stops={form.stops}
+              height={175}
+            />
+          </View>
+        )}
       </Card>
 
       {/* 2. Contact Information Card */}
@@ -286,6 +315,76 @@ export const Step3Checkout: React.FC<Step3CheckoutProps> = ({ onBookingSuccess }
             )}
           </View>
         </TouchableOpacity>
+
+        {/* Stripe Card Input Form */}
+        {form.paymentMethod === 'ONLINE' && (
+          <View style={[styles.stripeCardBox, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
+            <View style={styles.stripeHeaderRow}>
+              <View style={styles.stripeTitleWrap}>
+                <Ionicons name="shield-checkmark" size={14} color="#25D366" />
+                <Text style={[styles.stripeTitle, { color: theme.textPrimary }]}>STRIPE SECURE CARD ENTRY</Text>
+              </View>
+              <Text style={styles.stripeBadge}>256-BIT ENCRYPTION</Text>
+            </View>
+
+            <Input
+              label="Cardholder Name"
+              placeholder="e.g. Eleanor Vance"
+              value={cardName}
+              onChangeText={setCardName}
+              leftIcon={<Feather name="user" size={14} color={theme.primary} />}
+            />
+
+            <Input
+              label="Card Number"
+              placeholder="4242 •••• •••• 4242"
+              keyboardType="numeric"
+              value={cardNumber}
+              onChangeText={setCardNumber}
+              leftIcon={<Feather name="credit-card" size={14} color={theme.primary} />}
+            />
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  label="Expires"
+                  placeholder="MM/YY"
+                  value={cardExpiry}
+                  onChangeText={setCardExpiry}
+                  leftIcon={<Feather name="calendar" size={14} color={theme.primary} />}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Input
+                  label="CVC / CVV"
+                  placeholder="CVC"
+                  keyboardType="numeric"
+                  value={cardCvc}
+                  onChangeText={setCardCvc}
+                  leftIcon={<Feather name="lock" size={14} color={theme.primary} />}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Input
+                  label="Zip Code"
+                  placeholder="10001"
+                  keyboardType="numeric"
+                  value={cardZip}
+                  onChangeText={setCardZip}
+                  leftIcon={<Feather name="map-pin" size={14} color={theme.primary} />}
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleFillTestCard}
+              style={[styles.testCardBtn, { borderColor: theme.border, backgroundColor: theme.surface }]}
+            >
+              <Feather name="zap" size={12} color={theme.primary} />
+              <Text style={[styles.testCardBtnText, { color: theme.primary }]}>AUTOFILL STRIPE TEST CARD (4242)</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </Card>
 
       {/* 4. Guaranteed Rate Itemized Fare */}
@@ -403,7 +502,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 2,
     borderWidth: 1,
     gap: 12,
     marginBottom: 14,
@@ -415,12 +514,14 @@ const styles = StyleSheet.create({
   vehicleBrand: {
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
   vehicleModel: {
     fontSize: 15,
     fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
     marginTop: 2,
   },
   badgeRow: {
@@ -439,8 +540,8 @@ const styles = StyleSheet.create({
   itemLabel: {
     fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    fontWeight: '600',
+    letterSpacing: 1,
+    fontWeight: '700',
   },
   itemValue: {
     fontSize: 13,
@@ -452,8 +553,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
+    borderRadius: 2,
+    borderWidth: 1,
     marginVertical: 6,
   },
   paymentLeft: {
@@ -465,6 +566,8 @@ const styles = StyleSheet.create({
   paymentTitle: {
     fontSize: 13,
     fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   paymentSubtitle: {
     fontSize: 11,
@@ -473,15 +576,15 @@ const styles = StyleSheet.create({
   radio: {
     width: 20,
     height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
+    borderRadius: 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioInner: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: 1,
   },
   fareRow: {
     flexDirection: 'row',
@@ -504,10 +607,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   totalLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
   },
   totalSub: {
     fontSize: 11,
@@ -515,7 +618,8 @@ const styles = StyleSheet.create({
   },
   totalPrice: {
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '300',
+    letterSpacing: 1,
   },
   termsRow: {
     flexDirection: 'row',
@@ -526,8 +630,8 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 18,
     height: 18,
-    borderRadius: 5,
-    borderWidth: 1.5,
+    borderRadius: 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -540,5 +644,48 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 8,
     marginBottom: 20,
+  },
+  stripeCardBox: {
+    padding: 14,
+    borderRadius: 2,
+    borderWidth: 1,
+    marginTop: 12,
+  },
+  stripeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  stripeTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stripeTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  stripeBadge: {
+    color: '#25D366',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  testCardBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 2,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  testCardBtnText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
 })

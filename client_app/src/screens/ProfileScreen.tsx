@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   StatusBar,
   Linking,
   Alert,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeContext'
@@ -17,9 +17,7 @@ import { useAuth } from '../context/AuthContext'
 import { Header } from '../components/common/Header'
 import { Card } from '../components/common/Card'
 import { Button } from '../components/common/Button'
-import { Input } from '../components/common/Input'
 import { Badge } from '../components/common/Badge'
-import { api, DEFAULT_BASE_URL } from '../config/api'
 
 interface ProfileScreenProps {
   onOpenAuth: () => void
@@ -28,27 +26,6 @@ interface ProfileScreenProps {
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onOpenAuth }) => {
   const { theme, themeMode, setThemeMode, isDark } = useTheme()
   const { user, isAuthenticated, logout } = useAuth()
-
-  const [apiUrl, setApiUrl] = useState(api.getBaseUrl())
-  const [showApiConfig, setShowApiConfig] = useState(false)
-
-  const handleSaveApiUrl = async () => {
-    try {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      await api.setBaseUrl(apiUrl)
-      Alert.alert('API Updated', `Backend API URL saved: ${apiUrl}`)
-      setShowApiConfig(false)
-    } catch (e: any) {
-      Alert.alert('Error', e.message)
-    }
-  }
-
-  const handleResetApiUrl = async () => {
-    setApiUrl(DEFAULT_BASE_URL)
-    await api.setBaseUrl(DEFAULT_BASE_URL)
-    Alert.alert('API Reset', `Reset to default: ${DEFAULT_BASE_URL}`)
-    setShowApiConfig(false)
-  }
 
   const handleCallConcierge = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -129,6 +106,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onOpenAuth }) => {
               { id: 'system', label: 'System Match', icon: 'phone-portrait-outline' },
             ].map(item => {
               const isSelected = themeMode === item.id
+              const activeTextColor = isDark ? '#000000' : '#FFFFFF'
               return (
                 <TouchableOpacity
                   key={item.id}
@@ -147,13 +125,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onOpenAuth }) => {
                   <Ionicons
                     name={item.icon as any}
                     size={16}
-                    color={isSelected ? '#0A0D14' : theme.textPrimary}
+                    color={isSelected ? activeTextColor : theme.textPrimary}
                   />
                   <Text
                     style={[
                       styles.themePillText,
                       {
-                        color: isSelected ? '#0A0D14' : theme.textPrimary,
+                        color: isSelected ? activeTextColor : theme.textPrimary,
                         fontWeight: isSelected ? '700' : '500',
                       },
                     ]}
@@ -181,67 +159,30 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onOpenAuth }) => {
               onPress={handleCallConcierge}
               style={[styles.dispatchBtn, { backgroundColor: theme.surface, borderColor: theme.primary }]}
             >
-              <Feather name="phone" size={16} color={theme.primary} />
-              <Text style={[styles.dispatchBtnText, { color: theme.primary }]}>Call (646) 517-4942</Text>
+              <Feather name="phone" size={15} color={theme.primary} style={styles.dispatchBtnIcon} />
+              <Text
+                style={[styles.dispatchBtnText, { color: theme.primary }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                (646) 517-4942
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleSMSConcierge}
               style={[styles.dispatchBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
             >
-              <Feather name="message-square" size={16} color={theme.textPrimary} />
-              <Text style={[styles.dispatchBtnText, { color: theme.textPrimary }]}>Send SMS</Text>
+              <Feather name="message-square" size={15} color={theme.textPrimary} style={styles.dispatchBtnIcon} />
+              <Text
+                style={[styles.dispatchBtnText, { color: theme.textPrimary }]}
+                numberOfLines={1}
+              >
+                Send SMS
+              </Text>
             </TouchableOpacity>
           </View>
-        </Card>
-
-        {/* Backend Server Connection */}
-        <Card
-          title="Next.js Backend Server"
-          subtitle="Configure live API connection endpoint"
-          icon={<Feather name="server" size={16} color={theme.primary} />}
-          rightAction={
-            <TouchableOpacity onPress={() => setShowApiConfig(!showApiConfig)}>
-              <Feather
-                name={showApiConfig ? 'chevron-up' : 'settings'}
-                size={16}
-                color={theme.primary}
-              />
-            </TouchableOpacity>
-          }
-        >
-          <View style={styles.apiStatusRow}>
-            <View style={[styles.statusDot, { backgroundColor: '#10B981' }]} />
-            <Text style={[styles.apiUrlText, { color: theme.textSecondary }]} numberOfLines={1}>
-              {api.getBaseUrl()}
-            </Text>
-          </View>
-
-          {showApiConfig && (
-            <View style={{ marginTop: 12 }}>
-              <Input
-                label="Backend URL (Port 3010)"
-                value={apiUrl}
-                onChangeText={setApiUrl}
-                placeholder="http://localhost:3010 or http://192.168.x.x:3010"
-              />
-              <View style={styles.apiActionRow}>
-                <TouchableOpacity
-                  onPress={handleResetApiUrl}
-                  style={[styles.apiResetBtn, { borderColor: theme.border }]}
-                >
-                  <Text style={[styles.apiResetText, { color: theme.textMuted }]}>Reset Default</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={handleSaveApiUrl}
-                  style={[styles.apiSaveBtn, { backgroundColor: theme.primary }]}
-                >
-                  <Text style={styles.apiSaveText}>Save Endpoint</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
         </Card>
 
         {/* Sign Out Action */}
@@ -306,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 2,
     borderWidth: 1,
     marginTop: 14,
   },
@@ -323,7 +264,7 @@ const styles = StyleSheet.create({
   guestIcon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -331,6 +272,8 @@ const styles = StyleSheet.create({
   guestTitle: {
     fontSize: 16,
     fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   guestSubtitle: {
     fontSize: 12,
@@ -347,13 +290,15 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderRadius: 10,
+    borderRadius: 2,
     borderWidth: 1,
     alignItems: 'center',
     gap: 4,
   },
   themePillText: {
     fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   dispatchText: {
     fontSize: 12,
@@ -369,52 +314,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    borderRadius: 10,
+    gap: 6,
+    paddingVertical: 11,
+    paddingHorizontal: 8,
+    borderRadius: 2,
     borderWidth: 1,
+  },
+  dispatchBtnIcon: {
+    marginRight: 2,
   },
   dispatchBtnText: {
     fontSize: 11,
     fontWeight: '700',
-  },
-  apiStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  apiUrlText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  apiActionRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    marginTop: 10,
-  },
-  apiResetBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  apiResetText: {
-    fontSize: 11,
-  },
-  apiSaveBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  apiSaveText: {
-    color: '#0A0D14',
-    fontSize: 11,
-    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 })

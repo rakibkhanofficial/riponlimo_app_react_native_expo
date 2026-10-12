@@ -58,7 +58,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
                   ]}
                 >
                   {isCompleted ? (
-                    <Feather name="check" size={14} color="#0A0D14" />
+                    <Feather name="check" size={14} color={theme.buttonText} />
                   ) : (
                     <Text
                       style={[
@@ -121,24 +121,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   circle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    width: 26,
+    height: 26,
+    borderRadius: 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   circleText: {
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: '700',
   },
   title: {
-    fontSize: 12,
-    letterSpacing: 0.3,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   connector: {
     flex: 1,
-    height: 2,
+    height: 1,
     marginHorizontal: 8,
-    borderRadius: 1,
   },
 })

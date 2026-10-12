@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Image,
   TouchableOpacity,
   StatusBar,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeContext'
@@ -74,12 +74,12 @@ export const FleetScreen: React.FC<FleetScreenProps> = ({
                 style={[
                   styles.categoryText,
                   {
-                    color: isSelected ? '#0A0D14' : theme.textPrimary,
+                    color: isSelected ? theme.buttonText : theme.textPrimary,
                     fontWeight: isSelected ? '700' : '500',
                   },
                 ]}
               >
-                {cat === 'ALL' ? 'All Vehicles' : cat}
+                {cat === 'ALL' ? 'ALL VEHICLES' : cat.toUpperCase()}
               </Text>
             </TouchableOpacity>
           )
@@ -163,14 +163,14 @@ export const FleetScreen: React.FC<FleetScreenProps> = ({
                     onPress={() => setModalCar(car)}
                     style={[styles.detailsBtn, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}
                   >
-                    <Text style={[styles.detailsBtnText, { color: theme.textPrimary }]}>Specs</Text>
+                    <Text style={[styles.detailsBtnText, { color: theme.textPrimary }]}>SPECS</Text>
                   </TouchableOpacity>
 
                   <Button
-                    title="Reserve"
+                    title="RESERVE"
                     size="sm"
                     onPress={() => handleBookCar(car.id)}
-                    iconRight={<Feather name="chevron-right" size={14} color="#0A0D14" />}
+                    iconRight={<Feather name="chevron-right" size={14} color={theme.buttonText} />}
                   />
                 </View>
               </View>
@@ -204,11 +204,13 @@ const styles = StyleSheet.create({
   categoryPill: {
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: 2,
     borderWidth: 1,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -218,17 +220,20 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   fleetHeading: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '300',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
   },
   fleetSubtitle: {
     fontSize: 12,
     lineHeight: 18,
     marginTop: 4,
+    letterSpacing: 0.5,
   },
   carCard: {
-    borderRadius: 18,
-    borderWidth: 1.5,
+    borderRadius: 4,
+    borderWidth: 1,
     marginVertical: 10,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 4 },
@@ -246,19 +251,21 @@ const styles = StyleSheet.create({
   carBrand: {
     fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 2,
     textTransform: 'uppercase',
   },
   carModel: {
     fontSize: 17,
     fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
     marginTop: 2,
   },
   imageWrapper: {
     height: 150,
     marginHorizontal: 16,
     marginVertical: 10,
-    borderRadius: 12,
+    borderRadius: 2,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -277,12 +284,14 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 2,
   },
   inspectOverlayText: {
     color: '#FFFFFF',
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   featuresRow: {
     flexDirection: 'row',
@@ -298,6 +307,7 @@ const styles = StyleSheet.create({
   featText: {
     fontSize: 12,
     fontWeight: '600',
+    letterSpacing: 0.5,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -309,11 +319,12 @@ const styles = StyleSheet.create({
   ratesHint: {
     fontSize: 9,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   priceTag: {
     fontSize: 18,
     fontWeight: '800',
+    letterSpacing: 1,
   },
   perText: {
     fontSize: 11,
@@ -327,11 +338,12 @@ const styles = StyleSheet.create({
   detailsBtn: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 2,
     borderWidth: 1,
   },
   detailsBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 })
