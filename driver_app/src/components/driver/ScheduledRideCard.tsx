@@ -109,8 +109,8 @@ export const ScheduledRideCard: React.FC<ScheduledRideCardProps> = ({
             }}
             style={[styles.startBtn, { backgroundColor: theme.primary }]}
           >
-            <Text style={styles.startBtnText}>Set As Active Run</Text>
-            <Feather name="arrow-right" size={13} color="#0A0D14" />
+            <Text style={[styles.startBtnText, { color: theme.buttonText }]}>Set As Active Run</Text>
+            <Feather name="arrow-right" size={13} color={theme.buttonText} />
           </TouchableOpacity>
         )}
       </View>

@@ -68,8 +68,8 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#000000' }]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -81,11 +81,11 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
         >
           {/* Top Brand Header */}
           <View style={styles.brandContainer}>
-            <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="steering" size={32} color="#FFFFFF" />
+            <View style={[styles.iconCircle, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}>
+              <MaterialCommunityIcons name="steering" size={32} color={theme.primary} />
             </View>
-            <Text style={styles.brandTitle}>RIPON CHAUFFEUR</Text>
-            <Text style={styles.brandSubtitle}>EXECUTIVE FLEET TERMINAL</Text>
+            <Text style={[styles.brandTitle, { color: theme.textPrimary }]}>RIPON CHAUFFEUR</Text>
+            <Text style={[styles.brandSubtitle, { color: theme.textMuted }]}>EXECUTIVE FLEET TERMINAL</Text>
             <View style={styles.badgeRow}>
               <View style={styles.onlineDot} />
               <Text style={styles.badgeText}>DISPATCH SYSTEM ONLINE</Text>
@@ -93,9 +93,9 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
           </View>
 
           {/* Login Card */}
-          <View style={[styles.card, { backgroundColor: '#0C0C0E', borderColor: '#1C1C1E' }]}>
-            <Text style={styles.formTitle}>Terminal Authentication</Text>
-            <Text style={styles.formSubtitle}>
+          <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.formTitle, { color: theme.textPrimary }]}>Terminal Authentication</Text>
+            <Text style={[styles.formSubtitle, { color: theme.textSecondary }]}>
               Enter authorized chauffeur credentials to access your daily manifest, assign vehicles, and manage assigned runs.
             </Text>
 
@@ -116,7 +116,7 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
                 }}
                 autoCapitalize="none"
                 keyboardType="email-address"
-                leftIcon={<Feather name="mail" size={15} color="#FFFFFF" />}
+                leftIcon={<Feather name="mail" size={15} color={theme.textPrimary} />}
                 placeholder="driver1@riponlimo.com"
               />
 
@@ -128,7 +128,7 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
                   setErrorMessage(null)
                 }}
                 isPassword
-                leftIcon={<Feather name="lock" size={15} color="#FFFFFF" />}
+                leftIcon={<Feather name="lock" size={15} color={theme.textPrimary} />}
                 placeholder="••••••••••••"
               />
 
@@ -158,13 +158,13 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
           {/* Footer Security Badges */}
           <View style={styles.footerContainer}>
             <View style={styles.footerItem}>
-              <Feather name="shield" size={12} color="#888888" />
-              <Text style={styles.footerText}>TLC License Verified</Text>
+              <Feather name="shield" size={12} color={theme.textMuted} />
+              <Text style={[styles.footerText, { color: theme.textMuted }]}>TLC License Verified</Text>
             </View>
-            <View style={styles.footerDivider} />
+            <View style={[styles.footerDivider, { backgroundColor: theme.border }]} />
             <View style={styles.footerItem}>
-              <Feather name="navigation" size={12} color="#888888" />
-              <Text style={styles.footerText}>Mapbox Live Route HUD</Text>
+              <Feather name="navigation" size={12} color={theme.textMuted} />
+              <Text style={[styles.footerText, { color: theme.textMuted }]}>Mapbox Live Route HUD</Text>
             </View>
           </View>
         </ScrollView>

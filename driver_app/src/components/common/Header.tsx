@@ -34,9 +34,25 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <View style={[styles.container, { backgroundColor: theme.background, borderBottomColor: theme.borderSubtle }]}>
       <View style={styles.leftRow}>
-        <View style={[styles.logoBadge, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]}>
-          <Text style={[styles.logoLetter, { color: theme.primary }]}>R</Text>
-        </View>
+        <TouchableOpacity
+          onPress={handleDutyToggle}
+          activeOpacity={0.8}
+          style={styles.logoBadgeContainer}
+        >
+          <View style={[styles.logoBadge, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}>
+            <Text style={[styles.logoLetter, { color: theme.textPrimary }]}>R</Text>
+          </View>
+          {/* Active status indicator dot on bottom corner of the logo */}
+          <View
+            style={[
+              styles.dutyDotBadge,
+              {
+                backgroundColor: shift.isOnline ? theme.driverActive : theme.textMuted,
+                borderColor: theme.background,
+              },
+            ]}
+          />
+        </TouchableOpacity>
         <View>
           <Text style={[styles.brandTitle, { color: theme.textPrimary }]}>
             RIPON <Text style={{ color: theme.primary }}>CHAUFFEUR</Text>
@@ -46,33 +62,6 @@ export const Header: React.FC<HeaderProps> = ({
       </View>
 
       <View style={styles.rightRow}>
-        {/* On/Off Duty Toggle Pill */}
-        <TouchableOpacity
-          onPress={handleDutyToggle}
-          style={[
-            styles.dutyPill,
-            {
-              backgroundColor: shift.isOnline ? theme.driverActiveBg : theme.surfaceSubtle,
-              borderColor: shift.isOnline ? theme.driverActive : theme.border,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.dutyDot,
-              { backgroundColor: shift.isOnline ? theme.driverActive : theme.textMuted },
-            ]}
-          />
-          <Text
-            style={[
-              styles.dutyText,
-              { color: shift.isOnline ? theme.driverActive : theme.textMuted },
-            ]}
-          >
-            {shift.isOnline ? 'ONLINE' : 'OFFLINE'}
-          </Text>
-        </TouchableOpacity>
-
         {/* Theme Toggle */}
         <TouchableOpacity
           onPress={handleThemeToggle}
@@ -88,9 +77,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Chauffeur Avatar */}
         <TouchableOpacity
           onPress={onProfilePress}
-          style={[styles.profileButton, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}
+          style={[styles.profileButton, { backgroundColor: theme.surfaceSubtle, borderColor: theme.border }]}
         >
-          <Text style={[styles.userInitial, { color: theme.primary }]}>
+          <Text style={[styles.userInitial, { color: theme.textPrimary }]}>
             {driver?.name ? driver.name.charAt(0).toUpperCase() : 'C'}
           </Text>
         </TouchableOpacity>
@@ -114,13 +103,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  logoBadgeContainer: {
+    position: 'relative',
+  },
   logoBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1.5,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dutyDotBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
   },
   logoLetter: {
     fontSize: 18,
@@ -142,25 +143,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  dutyPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  dutyDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-  },
-  dutyText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
   },
   iconButton: {
     width: 36,

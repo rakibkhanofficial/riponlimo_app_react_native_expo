@@ -173,13 +173,13 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
                   <Ionicons
                     name={item.icon as any}
                     size={16}
-                    color={isSelected ? '#0A0D14' : theme.textPrimary}
+                    color={isSelected ? theme.buttonText : theme.textPrimary}
                   />
                   <Text
                     style={[
                       styles.themePillText,
                       {
-                        color: isSelected ? '#0A0D14' : theme.textPrimary,
+                        color: isSelected ? theme.buttonText : theme.textPrimary,
                         fontWeight: isSelected ? '700' : '500',
                       },
                     ]}
@@ -251,7 +251,7 @@ export const DriverProfileScreen: React.FC<DriverProfileScreenProps> = ({ onOpen
                   onPress={handleSaveApiUrl}
                   style={[styles.apiSaveBtn, { backgroundColor: theme.primary }]}
                 >
-                  <Text style={styles.apiSaveText}>Save Endpoint</Text>
+                  <Text style={[styles.apiSaveText, { color: theme.buttonText }]}>Save Endpoint</Text>
                 </TouchableOpacity>
               </View>
             </View>

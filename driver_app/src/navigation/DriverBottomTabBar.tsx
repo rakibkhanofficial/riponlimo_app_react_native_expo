@@ -75,7 +75,7 @@ export const DriverBottomTabBar: React.FC<DriverBottomTabBarProps> = ({
               />
               {tab.badgeCount && tab.badgeCount > 0 ? (
                 <View style={[styles.badgePill, { backgroundColor: theme.primary }]}>
-                  <Text style={styles.badgePillText}>{tab.badgeCount}</Text>
+                  <Text style={[styles.badgePillText, { color: theme.buttonText }]}>{tab.badgeCount}</Text>
                 </View>
               ) : null}
             </View>

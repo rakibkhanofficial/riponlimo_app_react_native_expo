@@ -246,7 +246,13 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ booking }) => {
             onPress={handleAdvance}
             size="lg"
             variant={currentTripStep === 'IN_TRANSIT' ? 'success' : 'primary'}
-            iconRight={<Feather name="chevron-right" size={18} color="#0A0D14" />}
+            iconRight={
+              <Feather
+                name="chevron-right"
+                size={18}
+                color={currentTripStep === 'IN_TRANSIT' ? '#FFFFFF' : theme.buttonText}
+              />
+            }
           />
         </View>
       )}

@@ -108,10 +108,11 @@ export const DriverAuthModal: React.FC<DriverAuthModalProps> = ({ visible, onClo
 
             <TouchableOpacity
               onPress={handleQuickDemo}
-              style={[styles.demoBtn, { borderColor: theme.primary, backgroundColor: theme.primaryLight }]}
+              style={styles.demoBtn}
+              activeOpacity={0.8}
             >
-              <Ionicons name="flash-outline" size={15} color={theme.primary} />
-              <Text style={[styles.demoBtnText, { color: theme.primary }]}>
+              <Ionicons name="flash" size={15} color="#25D366" />
+              <Text style={styles.demoBtnText}>
                 Instant Demo Chauffeur Sign In (John Rivera)
               </Text>
             </TouchableOpacity>
@@ -174,6 +175,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
+    borderColor: 'rgba(37, 211, 102, 0.35)',
+    backgroundColor: 'rgba(37, 211, 102, 0.08)',
     marginTop: 14,
     marginBottom: 20,
   },
@@ -181,5 +184,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
+    color: '#25D366',
   },
 })
