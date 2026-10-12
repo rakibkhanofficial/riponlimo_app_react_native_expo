@@ -4,19 +4,14 @@ import { Platform } from 'react-native'
 
 const API_STORAGE_KEY = '@ripon_limo_api_url'
 
-// Sensible default based on platform:
-// iOS Simulator: localhost:3010
-// Android Emulator: 10.0.2.2:3010
-// Physical Device: fallback to local IP or localhost
-const DEFAULT_PORT = '3010'
 export const DEFAULT_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
   Platform.select({
-    android: `http://10.0.2.2:${DEFAULT_PORT}`,
-    ios: `http://localhost:${DEFAULT_PORT}`,
-    default: `http://localhost:${DEFAULT_PORT}`,
+    android: `https://www.riponlimo.com`,
+    ios: `https://www.riponlimo.com`,
+    default: `https://www.riponlimo.com`,
   }) ||
-  `http://localhost:${DEFAULT_PORT}`
+  `https://www.riponlimo.com`
 
 export const FALLBACK_CARS: Car[] = [
   {
@@ -178,7 +173,7 @@ class ApiClient {
       if (saved) {
         this.baseUrl = saved
       }
-    } catch {}
+    } catch { }
   }
 
   getBaseUrl(): string {

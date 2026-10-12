@@ -4,15 +4,14 @@ import { User, Booking } from '../types'
 
 const API_STORAGE_KEY = '@ripon_limo_driver_api_url'
 
-const DEFAULT_PORT = '3010'
 export const DEFAULT_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
   Platform.select({
-    android: `http://10.0.2.2:${DEFAULT_PORT}`,
-    ios: `http://localhost:${DEFAULT_PORT}`,
-    default: `http://localhost:${DEFAULT_PORT}`,
+    android: `https://www.riponlimo.com`,
+    ios: `https://www.riponlimo.com`,
+    default: `https://www.riponlimo.com`,
   }) ||
-  `http://localhost:${DEFAULT_PORT}`
+  `https://www.riponlimo.com`
 
 export const FALLBACK_DRIVER_USER: User = {
   id: 'cmtsaqszn000213isx86po6mo',
@@ -170,7 +169,7 @@ class DriverApiClient {
     try {
       const saved = await AsyncStorage.getItem(API_STORAGE_KEY)
       if (saved) this.baseUrl = saved
-    } catch {}
+    } catch { }
   }
 
   getBaseUrl(): string {
