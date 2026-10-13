@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0A0D14"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.riponlimo.admin"
@@ -34,6 +29,17 @@
         "projectId": "28d28153-399a-44dd-9581-50e7dfd06662"
       }
     },
-    "owner": "rakib5566"
+    "owner": "rakib5566",
+    "plugins": [
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0A0D14"
+        }
+      ]
+    ]
   }
 }
