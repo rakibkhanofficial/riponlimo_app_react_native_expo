@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -85,14 +85,21 @@ export const Header: React.FC<HeaderProps> = ({
         ) : null}
 
         <View style={styles.brandBox}>
-          <Text style={[styles.brandTitle, { color: brandTitleColor }]}>
-            RIPON <Text style={[styles.brandTitleFaded, brandFadedColor ? { color: brandFadedColor, opacity: 1 } : null]}>LIMO</Text>
-          </Text>
-          {subtitle && (
-            <Text style={[styles.brandSubtitle, { color: subtitleColor }]}>
-              {subtitle}
+          <Image
+            source={require('../../../assets/icon.png')}
+            style={styles.brandLogo}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={[styles.brandTitle, { color: brandTitleColor }]}>
+              RIPON <Text style={[styles.brandTitleFaded, brandFadedColor ? { color: brandFadedColor, opacity: 1 } : null]}>LIMO</Text>
             </Text>
-          )}
+            {subtitle && (
+              <Text style={[styles.brandSubtitle, { color: subtitleColor }]}>
+                {subtitle}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
 
@@ -156,12 +163,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   brandBox: {
-    flexDirection: 'column',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+  },
+  brandLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
   },
   brandTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    letterSpacing: 3,
+    letterSpacing: 2.5,
     textTransform: 'uppercase',
   },
   brandTitleFaded: {

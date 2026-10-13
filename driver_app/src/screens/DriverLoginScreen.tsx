@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableOpacity,
   StatusBar,
+  Image,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -90,27 +91,18 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({ onLoginSuc
         >
           {/* ─── Top Brand Header ─── */}
           <View style={styles.brandContainer}>
-            <View
-              style={[
-                styles.iconGlowRing,
-                {
-                  backgroundColor: isDark ? 'rgba(37, 211, 102, 0.08)' : 'rgba(22, 163, 74, 0.08)',
-                  borderColor: isDark ? 'rgba(37, 211, 102, 0.2)' : 'rgba(22, 163, 74, 0.15)',
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.iconCircle,
-                  {
-                    backgroundColor: isDark ? 'rgba(37, 211, 102, 0.15)' : 'rgba(22, 163, 74, 0.12)',
-                    borderColor: isDark ? 'rgba(37, 211, 102, 0.35)' : 'rgba(22, 163, 74, 0.25)',
-                  },
-                ]}
-              >
-                <MaterialCommunityIcons name="steering" size={32} color="#25D366" />
-              </View>
-            </View>
+            <Image
+              source={require('../../assets/icon.png')}
+              style={{
+                width: 84,
+                height: 84,
+                borderRadius: 20,
+                marginBottom: 12,
+                borderWidth: 1.5,
+                borderColor: isDark ? 'rgba(212, 175, 55, 0.45)' : 'rgba(212, 175, 55, 0.3)',
+              }}
+              resizeMode="contain"
+            />
 
             <Text style={[styles.brandTitle, { color: theme.textPrimary }]}>RIPON CHAUFFEUR</Text>
             <Text style={[styles.brandSubtitle, { color: theme.textMuted }]}>

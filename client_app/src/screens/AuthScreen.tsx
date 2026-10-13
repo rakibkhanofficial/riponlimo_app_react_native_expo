@@ -191,11 +191,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ visible, onClose }) => {
         <View style={[styles.modalCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {/* Header */}
           <View style={[styles.modalHeader, { borderBottomColor: theme.borderSubtle }]}>
-            <View>
-              <Text style={[styles.brandTitle, { color: theme.primary }]}>RIPON LIMO</Text>
-              <Text style={[styles.brandSubtitle, { color: theme.textMuted }]}>
-                {mode === 'LOGIN' ? 'CLIENT PORTAL SIGN IN' : 'CREATE CLIENT ACCOUNT'}
-              </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Image
+                source={require('../../assets/icon.png')}
+                style={{ width: 38, height: 38, borderRadius: 10 }}
+                resizeMode="contain"
+              />
+              <View>
+                <Text style={[styles.brandTitle, { color: theme.primary }]}>RIPON LIMO</Text>
+                <Text style={[styles.brandSubtitle, { color: theme.textMuted }]}>
+                  {mode === 'LOGIN' ? 'CLIENT PORTAL SIGN IN' : 'CREATE CLIENT ACCOUNT'}
+                </Text>
+              </View>
             </View>
             <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: theme.surfaceSubtle }]}>
               <Feather name="x" size={20} color={theme.textPrimary} />

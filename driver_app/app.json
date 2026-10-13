@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Ripon Limo Driver",
+    "name": "Ripon Chauffeur",
     "slug": "ripon-limo-driver",
+    "scheme": "ripondriver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#0A0D14"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,7 +19,7 @@
     "android": {
       "package": "com.riponlimo.driver",
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
+        "backgroundColor": "#0A0D14",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,6 +28,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4e121ab6-858a-449a-a6bf-cf833f800c42"
+      }
+    },
+    "owner": "rakib5566"
   }
 }

@@ -1,17 +1,25 @@
 {
   "expo": {
-    "name": "admin_app",
-    "slug": "admin_app",
+    "name": "Ripon Fleet Admin",
+    "slug": "ripon-limo-admin",
+    "scheme": "riponadmin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0D14"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.riponlimo.admin"
     },
     "android": {
+      "package": "com.riponlimo.admin",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0A0D14",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -20,6 +28,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "28d28153-399a-44dd-9581-50e7dfd06662"
+      }
+    },
+    "owner": "rakib5566"
   }
 }

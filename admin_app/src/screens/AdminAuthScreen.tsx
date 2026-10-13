@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -83,14 +84,18 @@ export const AdminAuthScreen: React.FC<AdminAuthScreenProps> = ({ onLoginSuccess
 
         {/* Brand Header */}
         <View style={styles.brandBox}>
-          <View style={styles.logoRing}>
-            <LinearGradient
-              colors={[colors.goldLight, colors.goldDark]}
-              style={styles.logoGradient}
-            >
-              <Ionicons name="shield-checkmark" size={32} color="#0B0E14" />
-            </LinearGradient>
-          </View>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={{
+              width: 84,
+              height: 84,
+              borderRadius: 20,
+              marginBottom: 14,
+              borderWidth: 1.5,
+              borderColor: colors.gold,
+            }}
+            resizeMode="contain"
+          />
           <Text style={[styles.brandTitle, { color: colors.text }]}>RIPON LIMO</Text>
           <Text style={[styles.brandSubtitle, { color: colors.gold }]}>
             EXECUTIVE COMMAND & FLEET PORTAL

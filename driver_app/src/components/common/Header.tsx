@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Image } from 'react-native'
 import { Ionicons, Feather } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../../theme/ThemeContext'
@@ -39,8 +39,12 @@ export const Header: React.FC<HeaderProps> = ({
           activeOpacity={0.8}
           style={styles.logoBadgeContainer}
         >
-          <View style={[styles.logoBadge, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle }]}>
-            <Text style={[styles.logoLetter, { color: theme.textPrimary }]}>R</Text>
+          <View style={[styles.logoBadge, { borderColor: theme.border, backgroundColor: theme.surfaceSubtle, overflow: 'hidden' }]}>
+            <Image
+              source={require('../../../assets/icon.png')}
+              style={{ width: 36, height: 36 }}
+              resizeMode="contain"
+            />
           </View>
           {/* Active status indicator dot on bottom corner of the logo */}
           <View

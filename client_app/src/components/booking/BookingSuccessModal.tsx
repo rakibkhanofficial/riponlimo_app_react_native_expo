@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Linking,
 } from 'react-native'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
@@ -41,6 +42,17 @@ export const BookingSuccessModal: React.FC<BookingSuccessModalProps> = ({
   const handleBookAnother = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     onClose()
+  }
+
+  const handleOpenStripe = async () => {
+    if (booking?.checkoutUrl) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+      try {
+        await Linking.openURL(booking.checkoutUrl)
+      } catch (e) {
+        console.warn('Could not open Stripe URL:', e)
+      }
+    }
   }
 
   return (
@@ -94,6 +106,15 @@ export const BookingSuccessModal: React.FC<BookingSuccessModalProps> = ({
             </View>
 
             <View style={styles.detailRow}>
+              <Text style={[styles.detailLabel, { color: theme.textMuted }]}>Payment Method</Text>
+              <Badge
+                label={booking.checkoutUrl ? 'Online (Stripe)' : (booking.payment?.method === 'ONLINE' ? 'Card Online' : 'Pay Later / In-Car')}
+                variant={booking.checkoutUrl ? 'warning' : 'success'}
+                size="sm"
+              />
+            </View>
+
+            <View style={styles.detailRow}>
               <Text style={[styles.detailLabel, { color: theme.textMuted }]}>Guaranteed Total</Text>
               <Text style={[styles.detailPrice, { color: theme.primary }]}>
                 ${booking.totalAmount}
@@ -103,11 +124,23 @@ export const BookingSuccessModal: React.FC<BookingSuccessModalProps> = ({
 
           {/* Buttons */}
           <View style={styles.actions}>
+            {booking.checkoutUrl ? (
+              <>
+                <Button
+                  title="Pay Now with Stripe"
+                  onPress={handleOpenStripe}
+                  size="lg"
+                  icon={<Feather name="credit-card" size={17} color="#0A0D14" />}
+                />
+                <View style={{ height: 10 }} />
+              </>
+            ) : null}
             <Button
               title="View In My Rides"
+              variant={booking.checkoutUrl ? 'secondary' : 'primary'}
               onPress={handleViewRides}
-              size="lg"
-              icon={<Feather name="list" size={17} color="#0A0D14" />}
+              size={booking.checkoutUrl ? 'md' : 'lg'}
+              icon={<Feather name="list" size={17} color={booking.checkoutUrl ? theme.textPrimary : '#0A0D14'} />}
             />
             <View style={{ height: 10 }} />
             <Button

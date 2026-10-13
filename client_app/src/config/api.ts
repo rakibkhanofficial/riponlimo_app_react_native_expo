@@ -317,17 +317,18 @@ class ApiClient {
   }
 
   async createBooking(payload: any): Promise<Booking> {
+    let resultBooking: Booking
     try {
       const booking = await this.request<any>('/api/bookings', {
         method: 'POST',
         body: JSON.stringify(payload),
       })
-      return booking
+      resultBooking = booking
     } catch (err: any) {
       console.log('[API] Live booking submission error, generating offline confirmation', err)
       // If network fails, still give client smooth reservation experience
-      const mockId = `cl${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-      return {
+      const mockId = `CL${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+      resultBooking = {
         id: mockId,
         userId: payload.userId || 'guest-user',
         carId: payload.carId,
@@ -349,17 +350,49 @@ class ApiClient {
         isReturnTrip: payload.isReturnTrip,
         returnDate: payload.returnDate,
         returnTime: payload.returnTime,
+        payment: {
+          method: payload.paymentMethod || 'PAY_LATER',
+          amount: payload.totalAmount || 150,
+        },
         createdAt: new Date().toISOString(),
       } as Booking
     }
+
+    // Persist locally for immediate availability in My Rides
+    try {
+      const storageKey = `@ripon_limo_local_bookings_${payload.userId || 'guest'}`
+      const existingStr = await AsyncStorage.getItem(storageKey)
+      const existingList: Booking[] = existingStr ? JSON.parse(existingStr) : []
+      const updatedList = [resultBooking, ...existingList.filter(b => b.id !== resultBooking.id)]
+      await AsyncStorage.setItem(storageKey, JSON.stringify(updatedList))
+    } catch (cacheErr) {
+      console.warn('Could not cache booking locally:', cacheErr)
+    }
+
+    return resultBooking
   }
 
   async getUserBookings(userId: string): Promise<Booking[]> {
+    const storageKey = `@ripon_limo_local_bookings_${userId}`
+    let localBookings: Booking[] = []
     try {
-      const bookings = await this.request<Booking[]>(`/api/bookings?userId=${userId}`)
-      return bookings
+      const localStr = await AsyncStorage.getItem(storageKey)
+      if (localStr) localBookings = JSON.parse(localStr)
+    } catch {}
+
+    try {
+      const serverBookings = await this.request<Booking[]>(`/api/bookings?userId=${userId}`)
+      if (Array.isArray(serverBookings)) {
+        // Merge server and local bookings, server taking precedence
+        const serverIds = new Set(serverBookings.map(b => b.id))
+        const remainingLocal = localBookings.filter(b => !serverIds.has(b.id))
+        const merged = [...serverBookings, ...remainingLocal]
+        merged.sort((a, b) => new Date(b.pickupTime).getTime() - new Date(a.pickupTime).getTime())
+        return merged
+      }
+      return localBookings
     } catch (err) {
-      return []
+      return localBookings
     }
   }
 }

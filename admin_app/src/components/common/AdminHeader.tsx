@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeContext';
 import { getBaseUrl, setBaseUrl } from '../../services/api';
@@ -61,8 +61,12 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             </TouchableOpacity>
           )}
 
-          <View style={[styles.logoBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-            <Ionicons name="shield-checkmark" size={16} color={colors.text} />
+          <View style={[styles.logoBadge, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, overflow: 'hidden' }]}>
+            <Image
+              source={require('../../../assets/icon.png')}
+              style={{ width: 28, height: 28 }}
+              resizeMode="contain"
+            />
           </View>
           <View>
             <Text style={[styles.brandTitle, { color: colors.text }]}>{title}</Text>

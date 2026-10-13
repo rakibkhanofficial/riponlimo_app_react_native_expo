@@ -107,6 +107,8 @@ export interface Booking {
     method: string
     amount: number
   }
+  checkoutUrl?: string | null
+  bookingId?: string | null
 }
 
 export interface BookingFormData {

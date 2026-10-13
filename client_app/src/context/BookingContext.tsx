@@ -360,8 +360,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const payload = {
         userId: user?.id || undefined,
-        carId: form.selectedCarId,
-        serviceTypeId: form.selectedServiceId,
+        carId: form.selectedCarId || selectedCar?.id,
+        serviceTypeId: form.selectedServiceId || selectedService?.id,
         tripType: form.tripType,
         passengerCount: form.passengerCount,
         luggageCount: form.luggageCount,
